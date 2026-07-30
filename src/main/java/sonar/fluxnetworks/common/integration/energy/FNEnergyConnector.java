@@ -16,6 +16,12 @@ public class FNEnergyConnector implements IBlockEnergyConnector, IItemEnergyConn
     private FNEnergyConnector() {
     }
 
+    @Nonnull
+    @Override
+    public EnergyType getNativeType() {
+        return EnergyType.FE;
+    }
+
     @Override
     public boolean hasCapability(@Nonnull BlockEntity target, @Nonnull Direction side) {
         return !target.isRemoved() && target.getCapability(FluxCapabilities.FN_ENERGY_STORAGE, side).isPresent();

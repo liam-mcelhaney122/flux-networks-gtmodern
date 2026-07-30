@@ -6,6 +6,7 @@ import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.api.energy.IBlockEnergyConnector;
 import sonar.fluxnetworks.api.energy.IItemEnergyConnector;
 import sonar.fluxnetworks.common.util.FluxUtils;
@@ -15,6 +16,12 @@ import javax.annotation.Nonnull;
 public class GTCEUEnergyConnector implements IBlockEnergyConnector, IItemEnergyConnector {
 
     public static final GTCEUEnergyConnector INSTANCE = new GTCEUEnergyConnector();
+
+    @Nonnull
+    @Override
+    public EnergyType getNativeType() {
+        return EnergyType.EU;
+    }
 
     @Override
     public boolean hasCapability(@Nonnull BlockEntity target, @Nonnull Direction side) {
@@ -53,16 +60,14 @@ public class GTCEUEnergyConnector implements IBlockEnergyConnector, IItemEnergyC
         long amperage = container.getInputAmperage();
         if (simulate) {
             long energy = Math.min(voltage * amperage, demand);
-            return Math.min(energy << 2, amount);
+            return Math.min(energy, amount);
         }
-        long amountEu = amount >> 2;
-        voltage = Math.min(Math.min(voltage, amountEu), demand);
+        voltage = Math.min(Math.min(voltage, amount), demand);
         if (voltage == 0) {
             return 0;
         }
-        amperage = Math.min(amperage, amountEu / voltage);
-        long energy = voltage * container.acceptEnergyFromNetwork(side, voltage, amperage);
-        return energy << 2;
+        amperage = Math.min(amperage, amount / voltage);
+        return voltage * container.acceptEnergyFromNetwork(side, voltage, amperage);
     }
 
     @Override
@@ -71,7 +76,7 @@ public class GTCEUEnergyConnector implements IBlockEnergyConnector, IItemEnergyC
         if (container == null) {
             return 0;
         }
-        return container.removeEnergy(container.getOutputVoltage() * container.getOutputAmperage()) << 2;
+        return container.removeEnergy(container.getOutputVoltage() * container.getOutputAmperage());
     }
 
     @Override
@@ -93,7 +98,7 @@ public class GTCEUEnergyConnector implements IBlockEnergyConnector, IItemEnergyC
     public long sendTo(long amount, @Nonnull ItemStack stack, boolean simulate) {
         IElectricItem electricItem = FluxUtils.get(stack, GTCapability.CAPABILITY_ELECTRIC_ITEM);
         if (electricItem != null) {
-            return electricItem.charge(amount >> 2, electricItem.getTier(), false, simulate) << 2;
+            return electricItem.charge(amount, electricItem.getTier(), false, simulate);
         }
         return 0;
     }
@@ -102,7 +107,7 @@ public class GTCEUEnergyConnector implements IBlockEnergyConnector, IItemEnergyC
     public long receiveFrom(long amount, @Nonnull ItemStack stack, boolean simulate) {
         IElectricItem electricItem = FluxUtils.get(stack, GTCapability.CAPABILITY_ELECTRIC_ITEM);
         if (electricItem != null) {
-            return electricItem.discharge(amount >> 2, electricItem.getTier(), false, true, false) << 2;
+            return electricItem.discharge(amount, electricItem.getTier(), false, true, false);
         }
         return 0;
     }

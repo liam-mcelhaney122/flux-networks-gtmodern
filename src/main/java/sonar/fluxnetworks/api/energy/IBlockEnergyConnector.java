@@ -7,6 +7,11 @@ import javax.annotation.Nonnull;
 
 public interface IBlockEnergyConnector {
 
+    @Nonnull
+    default EnergyType getNativeType() {
+        return EnergyType.FE;
+    }
+
     boolean hasCapability(@Nonnull BlockEntity target, @Nonnull Direction side);
 
     boolean canSendTo(@Nonnull BlockEntity target, @Nonnull Direction side);

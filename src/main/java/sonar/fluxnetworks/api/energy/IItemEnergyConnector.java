@@ -6,6 +6,11 @@ import javax.annotation.Nonnull;
 
 public interface IItemEnergyConnector {
 
+    @Nonnull
+    default EnergyType getNativeType() {
+        return EnergyType.FE;
+    }
+
     boolean hasCapability(@Nonnull ItemStack stack);
 
     boolean canSendTo(@Nonnull ItemStack stack);

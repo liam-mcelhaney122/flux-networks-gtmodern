@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import sonar.fluxnetworks.FluxConfig;
 import sonar.fluxnetworks.api.FluxConstants;
 import sonar.fluxnetworks.api.energy.IBlockEnergyConnector;
+import sonar.fluxnetworks.api.energy.IEnergySystem;
 import sonar.fluxnetworks.common.connection.TransferHandler;
 import sonar.fluxnetworks.common.util.EnergyUtils;
 import sonar.fluxnetworks.common.util.FluxUtils;
@@ -23,7 +24,7 @@ public abstract class FluxConnectorHandler extends TransferHandler {
     }
 
     @Override
-    public void onCycleStart() {
+    public void onCycleStart(@Nonnull IEnergySystem es) {
         for (var transfer : mTransfers) {
             if (transfer != null) {
                 transfer.onCycleStart();

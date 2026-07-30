@@ -5,6 +5,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import sonar.fluxnetworks.api.FluxConstants;
 import sonar.fluxnetworks.api.device.*;
+import sonar.fluxnetworks.api.energy.EnergyType;
+import sonar.fluxnetworks.api.energy.IEnergySystem;
 import sonar.fluxnetworks.api.network.*;
 import sonar.fluxnetworks.common.capability.FluxPlayer;
 import sonar.fluxnetworks.common.device.TileFluxDevice;
@@ -53,9 +55,12 @@ public class ServerFluxNetwork extends FluxNetwork {
     ServerFluxNetwork() {
     }
 
-    ServerFluxNetwork(int id, String name, int color, @Nonnull SecurityLevel security, @Nonnull Player owner,
+    ServerFluxNetwork(int id, String name, int color, @Nonnull SecurityLevel security,
+                      @Nonnull EnergyType energyType, @Nonnull Player owner,
                       @Nonnull String password) {
         super(id, name, color, security, owner);
+        mEnergyType = energyType;
+        mEnergySystem = IEnergySystem.of(energyType);
         mPassword = password;
     }
 
@@ -127,9 +132,11 @@ public class ServerFluxNetwork extends FluxNetwork {
 
         mBufferLimiter = 0;
 
+        final IEnergySystem es = getEnergySystem();
+
         List<TileFluxDevice> devices = getLogicalDevices(ANY);
         for (var d : devices) {
-            d.getTransferHandler().onCycleStart();
+            d.getTransferHandler().onCycleStart(es);
         }
 
         List<TileFluxDevice> plugs = getLogicalDevices(PLUG);
@@ -164,7 +171,7 @@ public class ServerFluxNetwork extends FluxNetwork {
         long limiter = 0;
         for (var d : devices) {
             TransferHandler h = d.getTransferHandler();
-            h.onCycleEnd();
+            h.onCycleEnd(es);
             limiter += h.getRequest();
             if (h.getChange() != 0) {
                 d.markEnergyChanged();
@@ -240,6 +247,19 @@ public class ServerFluxNetwork extends FluxNetwork {
                 mConnectionMap.remove(device.getGlobalPos());
             }
         }
+    }
+
+    @Override
+    public boolean setEnergyType(@Nonnull EnergyType type) {
+        final EnergyType oldType = getEnergyType();
+        if (super.setEnergyType(type)) {
+            // re-denominate loaded devices' buffers, physical energy preserved
+            for (var d : getLogicalDevices(ANY)) {
+                d.getTransferHandler().onEnergyTypeChanged(oldType, type);
+            }
+            return true;
+        }
+        return false;
     }
 
     public void setPassword(@Nonnull String password) {

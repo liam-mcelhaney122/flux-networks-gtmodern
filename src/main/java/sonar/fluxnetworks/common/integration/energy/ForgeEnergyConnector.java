@@ -5,6 +5,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
+import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.api.energy.IBlockEnergyConnector;
 import sonar.fluxnetworks.api.energy.IItemEnergyConnector;
 import sonar.fluxnetworks.common.util.FluxUtils;
@@ -16,6 +17,12 @@ public class ForgeEnergyConnector implements IBlockEnergyConnector, IItemEnergyC
     public static final ForgeEnergyConnector INSTANCE = new ForgeEnergyConnector();
 
     private ForgeEnergyConnector() {
+    }
+
+    @Nonnull
+    @Override
+    public EnergyType getNativeType() {
+        return EnergyType.FE;
     }
 
     @Override

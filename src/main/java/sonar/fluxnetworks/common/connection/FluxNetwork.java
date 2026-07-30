@@ -8,6 +8,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.server.ServerLifecycleHooks;
 import sonar.fluxnetworks.api.FluxConstants;
 import sonar.fluxnetworks.api.device.IFluxDevice;
+import sonar.fluxnetworks.api.energy.EnergyType;
+import sonar.fluxnetworks.api.energy.IEnergySystem;
 import sonar.fluxnetworks.api.network.*;
 import sonar.fluxnetworks.common.capability.FluxPlayer;
 import sonar.fluxnetworks.common.device.TileFluxDevice;
@@ -60,6 +62,7 @@ public class FluxNetwork {
     public static final String NETWORK_COLOR = "color";
     public static final String OWNER_UUID = "owner";
     public static final String SECURITY_LEVEL = "security";
+    public static final String ENERGY_TYPE = "energyType";
     public static final String MEMBERS = "members";
     public static final String CONNECTIONS = "connections";
 
@@ -78,6 +81,9 @@ public class FluxNetwork {
     int mColor;
     UUID mOwnerUUID;
     SecurityLevel mSecurityLevel;
+    EnergyType mEnergyType = EnergyType.FE;
+    // derived from mEnergyType, never persisted
+    IEnergySystem mEnergySystem = IEnergySystem.of(EnergyType.FE);
 
     final NetworkStatistics mStatistics = new NetworkStatistics(this);
     final HashMap<UUID, NetworkMember> mMemberMap = new HashMap<>();
@@ -173,6 +179,35 @@ public class FluxNetwork {
     public boolean setSecurityLevel(@Nonnull SecurityLevel level) {
         if (mSecurityLevel != level) {
             mSecurityLevel = level;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns the energy type this network accounts in.
+     *
+     * @return the energy type of this network
+     */
+    @Nonnull
+    public final EnergyType getEnergyType() {
+        return mEnergyType;
+    }
+
+    /**
+     * Returns the energy system derived from {@link #getEnergyType()}.
+     *
+     * @return the energy system of this network
+     */
+    @Nonnull
+    public final IEnergySystem getEnergySystem() {
+        return mEnergySystem;
+    }
+
+    public boolean setEnergyType(@Nonnull EnergyType type) {
+        if (mEnergyType != type) {
+            mEnergyType = type;
+            mEnergySystem = IEnergySystem.of(type);
             return true;
         }
         return false;
@@ -356,6 +391,7 @@ public class FluxNetwork {
             tag.putInt(NETWORK_COLOR, mColor);
             tag.putUUID(OWNER_UUID, mOwnerUUID);
             tag.putByte(SECURITY_LEVEL, mSecurityLevel.getId());
+            tag.putByte(ENERGY_TYPE, mEnergyType.getId());
         }
         if (type == FluxConstants.NBT_SAVE_ALL) {
             Collection<NetworkMember> members = getAllMembers();
@@ -461,6 +497,8 @@ public class FluxNetwork {
             mColor = tag.getInt(NETWORK_COLOR);
             mOwnerUUID = tag.getUUID(OWNER_UUID);
             mSecurityLevel = SecurityLevel.fromId(tag.getByte(SECURITY_LEVEL));
+            mEnergyType = EnergyType.fromId(tag.getByte(ENERGY_TYPE));
+            mEnergySystem = IEnergySystem.of(mEnergyType);
         }
         if (type == FluxConstants.NBT_SAVE_ALL) {
             ListTag list = tag.getList(MEMBERS, Tag.TAG_COMPOUND);

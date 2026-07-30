@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import sonar.fluxnetworks.FluxConfig;
 import sonar.fluxnetworks.api.FluxConstants;
+import sonar.fluxnetworks.api.energy.IEnergySystem;
 import sonar.fluxnetworks.common.connection.TransferHandler;
 
 import javax.annotation.Nonnull;
@@ -18,11 +19,11 @@ public abstract class FluxStorageHandler extends TransferHandler {
     }
 
     @Override
-    public void onCycleStart() {
+    public void onCycleStart(@Nonnull IEnergySystem es) {
     }
 
     @Override
-    public void onCycleEnd() {
+    public void onCycleEnd(@Nonnull IEnergySystem es) {
         mChange = mAdded - mRemoved;
         mAdded = 0;
         mRemoved = 0;

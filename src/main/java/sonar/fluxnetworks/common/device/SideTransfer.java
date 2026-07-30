@@ -4,6 +4,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import sonar.fluxnetworks.api.energy.IBlockEnergyConnector;
+import sonar.fluxnetworks.api.energy.IEnergySystem;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,12 +34,14 @@ public class SideTransfer {
         }
     }
 
-    public long send(long amount, boolean simulate) {
+    public long send(long amount, boolean simulate, @Nonnull IEnergySystem es) {
         if (mTarget == null || mTarget.isRemoved()) {
             return 0;
         }
         if (mAdapter.canSendTo(mTarget, mSide)) {
-            long op = mAdapter.sendTo(amount, mTarget, mSide, simulate);
+            long op = es.fromConnectorCeil(
+                    mAdapter.sendTo(es.toConnector(amount, mAdapter.getNativeType()), mTarget, mSide, simulate),
+                    mAdapter.getNativeType());
             if (!simulate) {
                 mChange -= op;
             }

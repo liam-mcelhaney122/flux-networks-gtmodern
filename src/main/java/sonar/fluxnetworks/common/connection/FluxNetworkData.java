@@ -10,6 +10,7 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import sonar.fluxnetworks.FluxConfig;
 import sonar.fluxnetworks.FluxNetworks;
 import sonar.fluxnetworks.api.FluxConstants;
+import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.api.network.SecurityLevel;
 import sonar.fluxnetworks.common.capability.FluxPlayer;
 import sonar.fluxnetworks.register.Channel;
@@ -105,7 +106,8 @@ public final class FluxNetworkData extends SavedData {
 
     @Nullable
     public FluxNetwork createNetwork(@Nonnull Player creator, @Nonnull String name, int color,
-                                     @Nonnull SecurityLevel security, @Nonnull String password) {
+                                     @Nonnull SecurityLevel security, @Nonnull EnergyType energyType,
+                                     @Nonnull String password) {
         final int max = FluxConfig.maximumPerPlayer;
         if (max != -1 && !FluxPlayer.isPlayerSuperAdmin(creator)) {
             if (max <= 0) {
@@ -123,7 +125,8 @@ public final class FluxNetworkData extends SavedData {
             mUniqueID++;
         } while (mNetworks.containsKey(mUniqueID));
 
-        final ServerFluxNetwork network = new ServerFluxNetwork(mUniqueID, name, color, security, creator, password);
+        final ServerFluxNetwork network = new ServerFluxNetwork(mUniqueID, name, color, security, energyType,
+                creator, password);
 
         mNetworks.put(network.getNetworkID(), network);
         Channel.get().sendToAll(Messages.updateNetwork(network, FluxConstants.NBT_NET_BASIC));

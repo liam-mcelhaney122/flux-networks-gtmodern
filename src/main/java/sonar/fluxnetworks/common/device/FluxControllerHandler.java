@@ -9,6 +9,7 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import sonar.fluxnetworks.FluxConfig;
 import sonar.fluxnetworks.FluxNetworks;
 import sonar.fluxnetworks.api.FluxConstants;
+import sonar.fluxnetworks.api.energy.IEnergySystem;
 import sonar.fluxnetworks.api.energy.IItemEnergyConnector;
 import sonar.fluxnetworks.api.network.NetworkMember;
 import sonar.fluxnetworks.api.network.WirelessType;
@@ -39,7 +40,7 @@ public class FluxControllerHandler extends TransferHandler {
     }
 
     @Override
-    public void onCycleStart() {
+    public void onCycleStart(@Nonnull IEnergySystem es) {
         /*if (!WirelessType.ENABLE_WIRELESS.isActivated(mDevice.getNetwork())) {
             demand = 0;
             clearPlayers();
@@ -50,13 +51,13 @@ public class FluxControllerHandler extends TransferHandler {
         }
         if ((mTimer & 0x3) == 2) {
             // keep demand
-            mDesired = chargeAllItems(getLimit(), true);
+            mDesired = chargeAllItems(getLimit(), true, es);
         }
     }
 
     @Override
-    public void onCycleEnd() {
-        mBuffer += mChange = -sendToConsumers(Math.min(mBuffer, getLimit()));
+    public void onCycleEnd(@Nonnull IEnergySystem es) {
+        mBuffer += mChange = -sendToConsumers(Math.min(mBuffer, getLimit()), es);
         mTimer = ++mTimer & 0x3f;
     }
 
@@ -82,14 +83,14 @@ public class FluxControllerHandler extends TransferHandler {
         tag.putLong(FluxConstants.BUFFER, mBuffer);
     }
 
-    private long sendToConsumers(long energy) {
+    private long sendToConsumers(long energy, @Nonnull IEnergySystem es) {
         //if (!mDevice.isActive()) return 0;
         if ((mTimer & 0x3) != 0) return 0;
         //if (!WirelessType.ENABLE_WIRELESS.isActivated(mDevice.getNetwork())) return 0;
-        return chargeAllItems(energy, false);
+        return chargeAllItems(energy, false, es);
     }
 
-    private long chargeAllItems(long energy, boolean simulate) {
+    private long chargeAllItems(long energy, boolean simulate, @Nonnull IEnergySystem es) {
         long remaining = energy;
         for (var player : mPlayers.entrySet()) {
             // dead, or quit game
@@ -97,7 +98,7 @@ public class FluxControllerHandler extends TransferHandler {
                 continue;
             }
             for (WirelessHandler handler : player.getValue()) {
-                remaining = handler.chargeItems(remaining, simulate);
+                remaining = handler.chargeItems(remaining, simulate, es);
                 if (remaining <= 0) {
                     return energy;
                 }
@@ -177,14 +178,16 @@ public class FluxControllerHandler extends TransferHandler {
             Iterable<ItemStack> stacks,
             Predicate<ItemStack> validator) {
 
-        private long chargeItems(long remaining, boolean simulate) {
+        private long chargeItems(long remaining, boolean simulate, @Nonnull IEnergySystem es) {
             for (ItemStack stack : stacks) {
                 IItemEnergyConnector connector;
                 if (!validator.test(stack) || (connector = EnergyUtils.getConnector(stack)) == null) {
                     continue;
                 }
                 if (connector.canSendTo(stack)) {
-                    remaining -= connector.sendTo(remaining, stack, simulate);
+                    remaining -= es.fromConnectorCeil(
+                            connector.sendTo(es.toConnector(remaining, connector.getNativeType()), stack, simulate),
+                            connector.getNativeType());
                     if (remaining <= 0) {
                         return 0;
                     }

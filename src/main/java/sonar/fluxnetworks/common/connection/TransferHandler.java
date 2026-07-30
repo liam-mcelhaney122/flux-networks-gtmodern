@@ -4,6 +4,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
 import sonar.fluxnetworks.api.FluxConstants;
+import sonar.fluxnetworks.api.energy.EnergyType;
+import sonar.fluxnetworks.api.energy.IEnergySystem;
 import sonar.fluxnetworks.common.device.TileFluxDevice;
 
 import javax.annotation.Nonnull;
@@ -61,13 +63,21 @@ public abstract class TransferHandler {
      * Called before the start of the internal transfer cycle.
      * In this time, external energy transfer should be simulated.
      */
-    protected abstract void onCycleStart();
+    protected abstract void onCycleStart(@Nonnull IEnergySystem es);
 
     /**
      * Called after the end of the internal transfer cycle.
      * In this time, external energy transfer should be performed.
      */
-    protected abstract void onCycleEnd();
+    protected abstract void onCycleEnd(@Nonnull IEnergySystem es);
+
+    /**
+     * Called when the network's energy type changed, re-denominates the internal
+     * buffer into the new unit (overflow-clamped).
+     */
+    public void onEnergyTypeChanged(@Nonnull EnergyType oldType, @Nonnull EnergyType newType) {
+        mBuffer = IEnergySystem.convert(mBuffer, oldType.getFEShift() - newType.getFEShift(), false);
+    }
 
     /**
      * Insert energy to the internal buffer.

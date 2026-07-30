@@ -1,6 +1,7 @@
 package sonar.fluxnetworks.common.device;
 
 import net.minecraft.core.Direction;
+import sonar.fluxnetworks.api.energy.IEnergySystem;
 
 import javax.annotation.Nonnull;
 
@@ -16,7 +17,7 @@ public class FluxPlugHandler extends FluxConnectorHandler {
     }
 
     @Override
-    public void onCycleEnd() {
+    public void onCycleEnd(@Nonnull IEnergySystem es) {
         mChange = mReceived;
         mReceived = 0;
         mRemoved = 0;

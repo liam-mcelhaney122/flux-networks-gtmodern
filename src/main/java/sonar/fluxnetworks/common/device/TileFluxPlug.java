@@ -11,6 +11,7 @@ import net.minecraftforge.energy.IEnergyStorage;
 import sonar.fluxnetworks.api.FluxCapabilities;
 import sonar.fluxnetworks.api.device.FluxDeviceType;
 import sonar.fluxnetworks.api.device.IFluxPlug;
+import sonar.fluxnetworks.api.energy.IEnergySystem;
 import sonar.fluxnetworks.api.energy.IFNEnergyStorage;
 import sonar.fluxnetworks.common.util.FluxGuiStack;
 import sonar.fluxnetworks.common.util.FluxUtils;
@@ -90,10 +91,7 @@ public class TileFluxPlug extends TileFluxConnector implements IFluxPlug {
 
         @Override
         public int receiveEnergy(int maxReceive, boolean simulate) {
-            if (getNetwork().isValid()) {
-                return (int) mHandler.receive(maxReceive, mSide, simulate, getNetwork().getBufferLimiter());
-            }
-            return 0;
+            return (int) receiveEnergyL(maxReceive, simulate);
         }
 
         @Override
@@ -126,7 +124,9 @@ public class TileFluxPlug extends TileFluxConnector implements IFluxPlug {
         @Override
         public long receiveEnergyL(long maxReceive, boolean simulate) {
             if (getNetwork().isValid()) {
-                return mHandler.receive(maxReceive, mSide, simulate, getNetwork().getBufferLimiter());
+                final IEnergySystem es = getNetwork().getEnergySystem();
+                return es.toFE(mHandler.receive(es.fromFE(maxReceive), mSide, simulate,
+                        getNetwork().getBufferLimiter()));
             }
             return 0;
         }
@@ -138,12 +138,12 @@ public class TileFluxPlug extends TileFluxConnector implements IFluxPlug {
 
         @Override
         public long getEnergyStoredL() {
-            return mHandler.getBuffer();
+            return getNetwork().getEnergySystem().toFE(mHandler.getBuffer());
         }
 
         @Override
         public long getMaxEnergyStoredL() {
-            return Math.max(mHandler.getBuffer(), mHandler.getLimit());
+            return getNetwork().getEnergySystem().toFE(Math.max(mHandler.getBuffer(), mHandler.getLimit()));
         }
     }
 }

@@ -1,5 +1,9 @@
 package sonar.fluxnetworks.common.device;
 
+import sonar.fluxnetworks.api.energy.IEnergySystem;
+
+import javax.annotation.Nonnull;
+
 public class FluxPointHandler extends FluxConnectorHandler {
 
     private long mDesired;
@@ -8,14 +12,14 @@ public class FluxPointHandler extends FluxConnectorHandler {
     }
 
     @Override
-    public void onCycleStart() {
-        super.onCycleStart();
-        mDesired = sendToConsumers(getLimit(), true);
+    public void onCycleStart(@Nonnull IEnergySystem es) {
+        super.onCycleStart(es);
+        mDesired = sendToConsumers(getLimit(), true, es);
     }
 
     @Override
-    public void onCycleEnd() {
-        mBuffer += mChange = -sendToConsumers(Math.min(mBuffer, getLimit()), false);
+    public void onCycleEnd(@Nonnull IEnergySystem es) {
+        mBuffer += mChange = -sendToConsumers(Math.min(mBuffer, getLimit()), false, es);
     }
 
     @Override
@@ -28,11 +32,11 @@ public class FluxPointHandler extends FluxConnectorHandler {
         return Math.max(mDesired - mBuffer, 0);
     }
 
-    private long sendToConsumers(long energy, boolean simulate) {
+    private long sendToConsumers(long energy, boolean simulate, @Nonnull IEnergySystem es) {
         long leftover = energy;
         for (SideTransfer transfer : mTransfers) {
             if (transfer != null) {
-                leftover -= transfer.send(leftover, simulate);
+                leftover -= transfer.send(leftover, simulate, es);
                 if (leftover <= 0) {
                     return energy;
                 }
