@@ -9,12 +9,23 @@ import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.registries.RegistryObject;
 import sonar.fluxnetworks.FluxNetworks;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+
 public class RegistryCreativeModeTabs {
     public static final ResourceLocation CREATIVE_MODE_TAB_KEY = FluxNetworks.location("tab");
 
     public static final RegistryObject<CreativeModeTab> CREATIVE_MODE_TAB = RegistryObject.create(
             CREATIVE_MODE_TAB_KEY, Registries.CREATIVE_MODE_TAB, FluxNetworks.MODID
     );
+
+    /**
+     * Extra items appended to the creative tab. The optional GT integration adds its hatch
+     * items here during machine registration. This list is filled before the tab's lazy
+     * display callback runs.
+     */
+    public static final List<Supplier<ItemStack>> EXTRA_TAB_ITEMS = new ArrayList<>();
 
     static void register(RegisterEvent.RegisterHelper<CreativeModeTab> helper) {
         helper.register(CREATIVE_MODE_TAB_KEY, CreativeModeTab.builder()
@@ -32,6 +43,7 @@ public class RegistryCreativeModeTabs {
                     output.accept(RegistryItems.FLUX_CORE.get());
                     output.accept(RegistryItems.FLUX_CONFIGURATOR.get());
                     output.accept(RegistryItems.ADMIN_CONFIGURATOR.get());
+                    EXTRA_TAB_ITEMS.forEach(s -> output.accept(s.get()));
                 })
                 .build());
     }

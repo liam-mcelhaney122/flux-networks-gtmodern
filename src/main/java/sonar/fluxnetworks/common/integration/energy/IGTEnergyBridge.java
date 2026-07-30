@@ -1,12 +1,15 @@
 package sonar.fluxnetworks.common.integration.energy;
 
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
+import sonar.fluxnetworks.common.connection.ITransferNode;
 import sonar.fluxnetworks.common.device.TileFluxPlug;
 import sonar.fluxnetworks.common.device.TileFluxPoint;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Do not reference {@code com.gregtechceu} types in this interface. Flux owns
@@ -44,4 +47,11 @@ public interface IGTEnergyBridge {
      */
     @Nonnull
     LazyOptional<?> createPointEnergyContainer(@Nonnull TileFluxPoint point);
+
+    /**
+     * Resolves a GT machine block entity to its flux transfer node, if the machine is one of
+     * this mod's hatch machines. Returns null for anything else.
+     */
+    @Nullable
+    ITransferNode getTransferNode(@Nullable BlockEntity target);
 }

@@ -65,13 +65,18 @@ public class FluxUtils {
     }
 
     /**
-     * Resolves the transfer node at a position: a flux device block entity, or (in a later
-     * commit) a GT machine that implements ITransferNode via the GT bridge.
+     * Resolves the transfer node at a position: a flux device block entity, or a GT hatch
+     * machine that implements ITransferNode, resolved through the GT bridge.
      */
     @Nullable
     public static ITransferNode getTransferNode(@Nonnull Level level, @Nonnull BlockPos pos) {
-        if (level.getBlockEntity(pos) instanceof ITransferNode node) {
+        var be = level.getBlockEntity(pos);
+        if (be instanceof ITransferNode node) {
             return node;
+        }
+        var bridge = EnergyUtils.getGTEnergyBridge();
+        if (bridge != null) {
+            return bridge.getTransferNode(be);
         }
         return null;
     }

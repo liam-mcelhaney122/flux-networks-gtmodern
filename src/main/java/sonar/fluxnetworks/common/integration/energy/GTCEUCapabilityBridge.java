@@ -1,19 +1,23 @@
 package sonar.fluxnetworks.common.integration.energy;
 
+import com.gregtechceu.gtceu.api.blockentity.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import sonar.fluxnetworks.api.energy.EnergyMath;
 import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.api.energy.IEnergySystem;
 import sonar.fluxnetworks.common.connection.FluxNetwork;
+import sonar.fluxnetworks.common.connection.ITransferNode;
 import sonar.fluxnetworks.common.device.FluxPlugHandler;
 import sonar.fluxnetworks.common.device.TileFluxPlug;
 import sonar.fluxnetworks.common.device.TileFluxPoint;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * This is the only {@link IGTEnergyBridge} implementation. Together with
@@ -53,6 +57,18 @@ public class GTCEUCapabilityBridge implements IGTEnergyBridge {
     public LazyOptional<?> createPointEnergyContainer(@Nonnull TileFluxPoint point) {
         final IEnergyContainer container = new PointEnergyContainer(point);
         return LazyOptional.of(() -> container);
+    }
+
+    @Nullable
+    @Override
+    public ITransferNode getTransferNode(@Nullable BlockEntity target) {
+        // This mod's hatch machines implement ITransferNode on the MetaMachine,
+        // not on the holder block entity.
+        if (target instanceof IMachineBlockEntity machineBE &&
+                machineBE.getMetaMachine() instanceof ITransferNode node) {
+            return node;
+        }
+        return null;
     }
 
     /**
