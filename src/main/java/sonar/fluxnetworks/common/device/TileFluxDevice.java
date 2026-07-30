@@ -199,9 +199,10 @@ public abstract class TileFluxDevice extends BlockEntity implements IFluxDevice 
             mNetworkID = mNetwork.getNetworkID();
             getTransferHandler().onNetworkChanged();
             if (network.isValid()) {
-                // re-denominate buffer/limit if the network's energy type changed
-                // while this device was unloaded or disconnected, or if this device
-                // moved from a network with a different energy type
+                // Re-denominate the buffer and the limit if the network's energy type
+                // changed while this device was unloaded or disconnected. Also
+                // re-denominate them if this device moved here from a network with a
+                // different energy type.
                 getTransferHandler().reconcileEnergyUnit(network.getEnergyType());
             }
             // notify listeners

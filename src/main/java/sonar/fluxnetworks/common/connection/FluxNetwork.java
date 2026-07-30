@@ -82,7 +82,7 @@ public class FluxNetwork {
     UUID mOwnerUUID;
     SecurityLevel mSecurityLevel;
     EnergyType mEnergyType = EnergyType.FE;
-    // derived from mEnergyType, never persisted
+    // This field comes from mEnergyType. The game does not save it.
     IEnergySystem mEnergySystem = IEnergySystem.of(EnergyType.FE);
 
     final NetworkStatistics mStatistics = new NetworkStatistics(this);
@@ -185,7 +185,7 @@ public class FluxNetwork {
     }
 
     /**
-     * Returns the energy type this network accounts in.
+     * Returns the energy type that this network accounts in.
      *
      * @return the energy type of this network
      */
@@ -195,7 +195,8 @@ public class FluxNetwork {
     }
 
     /**
-     * Returns the energy system derived from {@link #getEnergyType()}.
+     * Returns the energy system that matches this network's energy type.
+     * See {@link #getEnergyType()}.
      *
      * @return the energy system of this network
      */

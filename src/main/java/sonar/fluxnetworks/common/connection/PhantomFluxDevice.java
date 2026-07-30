@@ -124,11 +124,13 @@ public class PhantomFluxDevice implements IFluxDevice {
     }
 
     /**
-     * Called when the network's energy type changed while this device is unloaded.
-     * Re-denominates the recorded buffer and limit into the new unit, mirroring
-     * {@link TransferHandler#onEnergyTypeChanged}, so this record stays consistent
-     * with loaded devices in the GUI and in network saves. Note this cannot touch
-     * the unloaded tile entity's own chunk NBT; see ServerFluxNetwork#setEnergyType.
+     * The network calls this method when its energy type changes while this
+     * device is unloaded. The method re-denominates the recorded buffer and
+     * limit into the new energy type. It mirrors
+     * {@link TransferHandler#onEnergyTypeChanged}. This keeps the record
+     * consistent with loaded devices in the GUI and in network saves.
+     * Note: this method cannot change the unloaded tile entity's own chunk
+     * NBT. See ServerFluxNetwork#setEnergyType.
      */
     public void onEnergyTypeChanged(@Nonnull EnergyType oldType, @Nonnull EnergyType newType) {
         final int shift = oldType.getFEShift() - newType.getFEShift();

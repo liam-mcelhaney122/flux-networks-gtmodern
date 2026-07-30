@@ -138,7 +138,7 @@ public final class FluxConstants {
 
     public static final String BUFFER = "buffer";
     public static final String ENERGY = "energy"; // equals to buffer, but with different display text
-    public static final String ENERGY_UNIT = "energyUnit"; // denomination of persisted buffer/limit
+    public static final String ENERGY_UNIT = "energyUnit"; // the energy type for the saved buffer and limit values
     public static final String CHANGE = "change";
 
     static {

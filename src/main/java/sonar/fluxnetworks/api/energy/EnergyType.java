@@ -8,7 +8,8 @@ public enum EnergyType {
     EU("Energy Unit", "EU", "EU/t");
 
     /**
-     * Prefers this without creating new array objects.
+     * Use this array instead of calling {@code values()}. Calling {@code values()}
+     * creates a new array each time.
      */
     public static final EnergyType[] VALUES = values();
 
@@ -35,7 +36,8 @@ public enum EnergyType {
     }
 
     /**
-     * The left shift that converts one unit of this type to FE (FE=0, EU=2).
+     * Returns the left shift that converts one unit of this type to FE. FE shifts
+     * by 0; EU shifts by 2.
      */
     public int getFEShift() {
         return this == EU ? 2 : 0;

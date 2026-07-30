@@ -16,18 +16,20 @@ import sonar.fluxnetworks.common.device.TileFluxPoint;
 import javax.annotation.Nonnull;
 
 /**
- * The only {@link IGTEnergyBridge} implementation, and (together with
- * {@link GTCEUEnergyConnector}) one of exactly two classes allowed to import
- * {@code com.gregtechceu} types. Instantiated solely inside the gtceu-gated block of
- * {@link sonar.fluxnetworks.common.util.EnergyUtils#register()}, so no GT class is
- * loaded unless the mod is present and enabled.
+ * This is the only {@link IGTEnergyBridge} implementation. Together with
+ * {@link GTCEUEnergyConnector}, it is one of exactly two classes that may
+ * import {@code com.gregtechceu} types. The code creates this class only
+ * inside the gtceu-gated block of
+ * {@link sonar.fluxnetworks.common.util.EnergyUtils#register()}. So, the game
+ * loads no GT class unless the mod is present and enabled.
  * <p>
  * GT convention notes (verified at tag 1.20.1-1.1.3.b-build_528):
- * {@code acceptEnergyFromNetwork(side, voltage, amperage)} returns the number of
- * <em>amperes</em> accepted, and the receiver is credited {@code voltage * amps} EU.
- * Sources push with their own output voltage; the advertised input voltage/amperage
- * are receiver policy and display only. Over-voltage explosions only occur in
- * receivers implementing {@code IExplosionMachine}, which these adapters are not.
+ * {@code acceptEnergyFromNetwork(side, voltage, amperage)} returns the number
+ * of <em>amperes</em> accepted. The receiver is credited {@code voltage * amps}
+ * EU. Sources push energy at their own output voltage. The advertised input
+ * voltage and amperage are receiver policy, for display only. Over-voltage
+ * explosions only occur in receivers that implement {@code IExplosionMachine}.
+ * These adapters do not implement it.
  */
 public class GTCEUCapabilityBridge implements IGTEnergyBridge {
 
@@ -54,12 +56,13 @@ public class GTCEUCapabilityBridge implements IGTEnergyBridge {
     }
 
     /**
-     * EU input adapter for a plug, one instance per side. Accepts whole amps only,
-     * backed by {@link FluxPlugHandler#receive} with the network's
-     * {@link IEnergySystem} converting at the boundary (identity on EU networks,
-     * {@code <<2} on FE networks), so no energy is created or lost:
-     * the source deducts {@code amps * voltage} EU while the plug credits exactly
-     * {@code amps * fromConnector(voltage)} native units.
+     * This is an EU input adapter for a plug, with one instance per side. It
+     * accepts whole amps only. {@link FluxPlugHandler#receive} backs it, and
+     * the network's {@link IEnergySystem} converts the amount at the boundary
+     * (identity on EU networks, {@code <<2} on FE networks). So, this adapter
+     * creates or loses no energy: the source deducts {@code amps * voltage}
+     * EU, and the plug credits exactly {@code amps * fromConnector(voltage)}
+     * native units.
      */
     private static class PlugEnergyContainer implements IEnergyContainer {
 
@@ -87,10 +90,10 @@ public class GTCEUCapabilityBridge implements IGTEnergyBridge {
             }
             final FluxPlugHandler handler = mPlug.getTransferHandler();
             final long limiter = network.getBufferLimiter();
-            // overflow clamp so amps * nativePerAmp stays in long range
+            // Overflow-clamp the amps so amps * nativePerAmp stays in the long range.
             long amps = EnergyMath.clampAmps(amperage, nativePerAmp);
             final long sim = handler.receive(amps * nativePerAmp, mSide, true, limiter);
-            // whole amps only
+            // Keep only whole amps.
             amps = EnergyMath.wholeAmps(amps, nativePerAmp, sim);
             if (amps > 0) {
                 handler.receive(amps * nativePerAmp, mSide, false, limiter);
@@ -101,7 +104,7 @@ public class GTCEUCapabilityBridge implements IGTEnergyBridge {
 
         @Override
         public boolean inputsEnergy(Direction side) {
-            // mirrors the FE cap's canReceive()
+            // This mirrors the FE capability's canReceive() method.
             return mPlug.getNetwork().isValid();
         }
 
@@ -112,15 +115,17 @@ public class GTCEUCapabilityBridge implements IGTEnergyBridge {
 
         @Override
         public long changeEnergy(long differenceAmount) {
-            // GT javadoc: internal use only, not for network pushing
+            // The GT javadoc marks this method for internal use only, not for
+            // pushing into the network.
             return 0;
         }
 
         @Override
         public long getEnergyCanBeInserted() {
-            // honest headroom: same formula as acceptance (including its quirks), so
-            // GT generators idle when the network has no demand instead of spamming
-            // refused packets, and advertisement always agrees with acceptance
+            // This reports honest headroom, using the same formula as acceptance,
+            // including its quirks. So, GT generators idle when the network has no
+            // demand, instead of sending refused packets repeatedly. The advertised
+            // headroom always agrees with what the network accepts.
             final FluxNetwork network = mPlug.getNetwork();
             if (!network.isValid()) {
                 return 0;
@@ -138,15 +143,16 @@ public class GTCEUCapabilityBridge implements IGTEnergyBridge {
 
         @Override
         public long getEnergyCapacity() {
-            // keeps the GT default identity (capacity - stored == canBeInserted) honest
+            // This keeps the GT default identity true: capacity minus stored equals
+            // canBeInserted.
             final long sum = getEnergyStored() + getEnergyCanBeInserted();
             return sum < 0 ? Long.MAX_VALUE : sum;
         }
 
         @Override
         public long getInputAmperage() {
-            // == GTValues.V[MAX]; never Long.MAX_VALUE so any GT-side V*A product
-            // stays in long range
+            // This equals GTValues.V[MAX]. It is never Long.MAX_VALUE, so any
+            // GT-side V * A product stays in the long range.
             return Integer.MAX_VALUE;
         }
 
@@ -157,12 +163,12 @@ public class GTCEUCapabilityBridge implements IGTEnergyBridge {
     }
 
     /**
-     * Connection-only stub for a point so GT cables attach (attachment and endpoint
-     * discovery need only capability presence). All input methods refuse energy and
-     * {@code getEnergyCanBeInserted()} stays at its 0 default, so nothing tries to
-     * fill it. Actual delivery stays flux-side:
-     * {@code SideTransfer.send -> GTCEUEnergyConnector.sendTo} into the neighbor's
-     * own container.
+     * This is a connection-only stub for a point, so that GT cables can attach.
+     * Attachment and endpoint discovery need only capability presence. All input
+     * methods refuse energy, and {@code getEnergyCanBeInserted()} stays at its
+     * default value of 0. So, nothing tries to fill it. Actual delivery stays
+     * on the flux side: {@code SideTransfer.send -> GTCEUEnergyConnector.sendTo}
+     * delivers energy into the neighbor's own container.
      */
     private static class PointEnergyContainer implements IEnergyContainer {
 
@@ -214,13 +220,13 @@ public class GTCEUCapabilityBridge implements IGTEnergyBridge {
 
         @Override
         public long getOutputVoltage() {
-            // display-only; delivery happens flux-side
+            // This value is for display only. Delivery happens on the flux side.
             return Integer.MAX_VALUE;
         }
 
         @Override
         public long getOutputAmperage() {
-            // display-only; defensive nonzero
+            // This value is for display only. It is a defensive nonzero value.
             return 1;
         }
     }

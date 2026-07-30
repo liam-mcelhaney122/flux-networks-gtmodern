@@ -9,10 +9,10 @@ public class FormatUtils {
     }
 
     /**
-     * Compact format (like 3.5M)
+     * Formats the value in compact form, for example 3.5M.
      *
-     * @param in value in
-     * @return compact string
+     * @param in the value to format
+     * @return the compact string
      */
     public static String compact(long in) {
         if (in < 1000) {

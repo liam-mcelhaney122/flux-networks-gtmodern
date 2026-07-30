@@ -14,19 +14,21 @@ import sonar.fluxnetworks.common.util.FluxUtils;
 import javax.annotation.Nonnull;
 
 /**
- * EU-native connector for GregTech Modern blocks and electric items. All amounts
- * crossing this connector are denominated in EU; the caller's {@code IEnergySystem}
- * converts to/from the network's native unit at the boundary.
+ * This is an EU-native connector for GregTech Modern blocks and electric
+ * items. This connector denominates all amounts that cross it in EU. The
+ * caller's {@code IEnergySystem} converts the amount to and from the
+ * network's native energy type at the boundary.
  * <p>
- * Registration order dependency: this connector is added after the Forge connector
- * in {@link sonar.fluxnetworks.common.util.EnergyUtils#register()}, and connector
- * lookup is first-match. GT machines at the supported tag expose no
- * {@code ForgeCapabilities.ENERGY}, so Forge-before-GTCEU guarantees no double
- * conversion in either direction. Do not reorder.
+ * Do not reorder the connector registration. This connector must register
+ * after the Forge connector, in
+ * {@link sonar.fluxnetworks.common.util.EnergyUtils#register()}, because
+ * connector lookup uses the first match. GT machines at the supported tag
+ * expose no {@code ForgeCapabilities.ENERGY}. So, registering Forge before
+ * GTCEU guarantees no double conversion in either direction.
  * <p>
- * GT convention: {@code acceptEnergyFromNetwork(side, voltage, amperage)} returns
- * the number of <em>amperes</em> accepted; the receiver is credited
- * {@code voltage * amps} EU, whole amps only.
+ * GT convention: {@code acceptEnergyFromNetwork(side, voltage, amperage)}
+ * returns the number of <em>amperes</em> accepted. The receiver is credited
+ * {@code voltage * amps} EU, in whole amps only.
  */
 public class GTCEUEnergyConnector implements IBlockEnergyConnector, IItemEnergyConnector {
 
@@ -71,7 +73,7 @@ public class GTCEUEnergyConnector implements IBlockEnergyConnector, IItemEnergyC
             return 0;
         }
         long demand = container.getEnergyCanBeInserted();
-        // <= 0: an overfilled container may report negative headroom
+        // An overfilled container may report negative headroom, so check for <= 0.
         if (demand <= 0) {
             return 0;
         }
@@ -79,15 +81,15 @@ public class GTCEUEnergyConnector implements IBlockEnergyConnector, IItemEnergyC
         if (voltage <= 0) {
             return 0;
         }
-        // whole amps only; voltage * amperage <= min(amount, demand) by construction,
-        // so the product cannot overflow
+        // Keep whole amps only. By construction, voltage * amperage stays <=
+        // min(amount, demand), so the product cannot overflow.
         long amperage = Math.min(Math.min(container.getInputAmperage(), amount / voltage), demand / voltage);
         if (amperage <= 0) {
             return 0;
         }
         if (simulate) {
-            // exactly predicts execute against a receiver whose advertised headroom
-            // agrees with its acceptance
+            // This exactly predicts what execute will do, for a receiver whose
+            // advertised headroom agrees with its acceptance.
             return voltage * amperage;
         }
         return voltage * container.acceptEnergyFromNetwork(side, voltage, amperage);
@@ -95,8 +97,9 @@ public class GTCEUEnergyConnector implements IBlockEnergyConnector, IItemEnergyC
 
     @Override
     public long receiveFrom(long amount, @Nonnull BlockEntity target, @Nonnull Direction side, boolean simulate) {
-        // Note: currently uncalled — flux never pulls from GT blocks (GT sources push
-        // into the plug's IEnergyContainer instead); kept correct defensively.
+        // Note: nothing calls this method today. Flux never pulls energy from GT
+        // blocks. Instead, GT sources push energy into the plug's IEnergyContainer.
+        // This method stays correct as a defensive measure.
         if (amount <= 0) {
             return 0;
         }
@@ -108,17 +111,20 @@ public class GTCEUEnergyConnector implements IBlockEnergyConnector, IItemEnergyC
         if (voltage <= 0) {
             return 0;
         }
-        // whole amps only; voltage * amperage <= amount by construction, overflow-free
+        // Keep whole amps only. By construction, voltage * amperage stays <=
+        // amount, so it cannot overflow.
         long amperage = Math.min(container.getOutputAmperage(), amount / voltage);
         if (amperage <= 0) {
             return 0;
         }
         long packet = voltage * amperage;
         if (simulate) {
-            // removeEnergy has no simulation support; do not mutate on simulate
+            // Do not mutate state during simulation. removeEnergy has no
+            // simulation support.
             return packet;
         }
-        // removeEnergy's return sign convention is unverified; normalize defensively
+        // The sign convention of removeEnergy's return value is unverified. This
+        // code normalizes it defensively.
         return Math.min(Math.abs(container.removeEnergy(packet)), packet);
     }
 

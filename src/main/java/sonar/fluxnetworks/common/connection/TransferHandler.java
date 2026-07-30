@@ -53,9 +53,10 @@ public abstract class TransferHandler {
     private boolean mDisableLimit;
 
     /**
-     * The energy type that {@link #mBuffer} and {@link #mLimit} are denominated in.
-     * Server only, persisted so the values can be re-denominated on reload if the
-     * network's energy type changed while this device was unloaded or disconnected.
+     * This is the energy type of {@link #mBuffer} and {@link #mLimit}. Only
+     * the server saves this field. The server uses it to re-denominate the
+     * buffer and the limit on reload, if the network's energy type changed
+     * while this device was unloaded or disconnected.
      */
     private EnergyType mUnit = EnergyType.FE;
 
@@ -79,26 +80,29 @@ public abstract class TransferHandler {
     protected abstract void onCycleEnd(@Nonnull IEnergySystem es);
 
     /**
-     * Called when the network's energy type changed, re-denominates the internal
-     * buffer and the user-set transfer limit into the new unit (overflow-clamped),
-     * so the physical energy and effective rate are preserved. The limit is skipped
-     * while bypassed ({@link #getDisableLimit()}), since it has no effect then.
+     * The network calls this method when its energy type changes. The method
+     * re-denominates the internal buffer and the user-set transfer limit into
+     * the new energy type, and overflow-clamps both values. This keeps the
+     * physical energy and the effective rate unchanged. The method skips the
+     * limit when it is bypassed ({@link #getDisableLimit()}), because the
+     * limit has no effect then.
      */
     public void onEnergyTypeChanged(@Nonnull EnergyType oldType, @Nonnull EnergyType newType) {
         final int shift = oldType.getFEShift() - newType.getFEShift();
         mBuffer = IEnergySystem.convert(mBuffer, shift, false);
         if (!mDisableLimit) {
-            // setLimit re-applies subclass clamping (e.g. storage capacity)
+            // setLimit re-applies the subclass's clamping, for example storage capacity
             setLimit(IEnergySystem.convert(mLimit, shift, false));
         }
         mUnit = newType;
     }
 
     /**
-     * Re-denominates the internal values into the given network's energy type if they
-     * are still in another unit, i.e. the network's energy type changed while this
-     * device was unloaded or disconnected, so the stale-unit values loaded from this
-     * device's own chunk NBT don't silently gain or lose physical energy.
+     * Re-denominates the internal values into the given network's energy type,
+     * if they are still in another unit. This situation happens when the
+     * network's energy type changes while this device is unloaded or
+     * disconnected. This step stops the stale-unit values, loaded from this
+     * device's own chunk NBT, from silently gaining or losing physical energy.
      *
      * @param type the connected network's energy type
      */
@@ -291,7 +295,7 @@ public abstract class TransferHandler {
                 mSurgeMode = tag.getBoolean(FluxConstants.SURGE_MODE);
                 mLimit = tag.getLong(FluxConstants.LIMIT);
                 mDisableLimit = tag.getBoolean(FluxConstants.DISABLE_LIMIT);
-                // missing key reads 0, i.e. FE, matching legacy saves
+                // A missing key reads as 0, which is FE. This matches legacy saves.
                 mUnit = EnergyType.fromId(tag.getByte(FluxConstants.ENERGY_UNIT));
             }
             case FluxConstants.NBT_TILE_UPDATE -> {

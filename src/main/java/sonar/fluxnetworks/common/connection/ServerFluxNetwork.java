@@ -253,21 +253,23 @@ public class ServerFluxNetwork extends FluxNetwork {
     public boolean setEnergyType(@Nonnull EnergyType type) {
         final EnergyType oldType = getEnergyType();
         if (super.setEnergyType(type)) {
-            // re-denominate loaded devices' buffers and limits, physical energy preserved
+            // Re-denominate the buffers and limits of loaded devices. This keeps
+            // the physical energy unchanged.
             for (var d : getLogicalDevices(ANY)) {
                 d.getTransferHandler().onEnergyTypeChanged(oldType, type);
             }
-            // devices queued for addition are in the connection map but not yet in
-            // the logical lists, cover them as well
+            // Devices queued for addition sit in the connection map. They are not
+            // yet in the logical lists, so this loop updates them too.
             for (var d : mToAdd) {
                 d.getTransferHandler().onEnergyTypeChanged(oldType, type);
             }
-            // unloaded devices are recorded as phantoms holding raw NBT values,
-            // re-denominate them too so GUI display and network saves stay consistent.
-            // Note: an unloaded tile entity's own chunk NBT is unreachable from here,
-            // it keeps old-unit values (tagged with their unit) until its chunk is
-            // next loaded, then TransferHandler#reconcileEnergyUnit converts them
-            // when the tile reconnects, see TileFluxDevice#connect.
+            // Unloaded devices are recorded as phantoms that hold raw NBT values.
+            // Re-denominate them too, so the GUI display and the network saves
+            // stay consistent.
+            // Note: this method cannot reach an unloaded tile entity's own chunk
+            // NBT. That NBT keeps its old-unit values (tagged with their unit)
+            // until the chunk next loads. Then TransferHandler#reconcileEnergyUnit
+            // converts them when the tile reconnects. See TileFluxDevice#connect.
             for (var d : mConnectionMap.values()) {
                 if (d instanceof PhantomFluxDevice phantom) {
                     phantom.onEnergyTypeChanged(oldType, type);

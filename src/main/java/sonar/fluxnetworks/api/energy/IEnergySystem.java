@@ -3,11 +3,12 @@ package sonar.fluxnetworks.api.energy;
 import javax.annotation.Nonnull;
 
 /**
- * The energy system a network accounts in. All network-internal values (buffers,
- * limits, statistics) are denominated in the system's {@link EnergyType}; conversion
- * only happens at connector boundaries via the methods below. All conversions are
- * bit shifts (1 EU = 4 FE), so a system paired with a connector of the same type
- * reduces to identity everywhere.
+ * This is the energy system that a network uses for its accounting. The
+ * network denominates all internal values (buffers, limits, statistics) in
+ * the system's {@link EnergyType}. Conversion happens only at the connector
+ * boundaries, through the methods below. All conversions use bit shifts
+ * (1 EU = 4 FE). So, if the system and the connector share the same energy
+ * type, the conversion is an identity operation.
  */
 public interface IEnergySystem {
 
@@ -20,25 +21,26 @@ public interface IEnergySystem {
     EnergyType getEnergyType();
 
     /**
-     * Convert a network-native amount to the connector's native unit, for offering
-     * energy out. Overflow-clamped when converting to a smaller unit, floored when
-     * converting to a bigger unit.
+     * Converts a network-native amount to the connector's native unit, to offer
+     * energy out. The method overflow-clamps the result when it converts to a
+     * smaller unit. It floors the result when it converts to a bigger unit.
      */
     default long toConnector(long amount, @Nonnull EnergyType connectorType) {
         return convert(amount, getEnergyType().getFEShift() - connectorType.getFEShift(), false);
     }
 
     /**
-     * Convert a connector-native amount to the network's native unit, flooring,
-     * for crediting received energy.
+     * Converts a connector-native amount to the network's native unit. The
+     * method floors the result, to credit received energy.
      */
     default long fromConnector(long amount, @Nonnull EnergyType connectorType) {
         return convert(amount, connectorType.getFEShift() - getEnergyType().getFEShift(), false);
     }
 
     /**
-     * Convert a connector-native amount to the network's native unit, ceiling,
-     * for deducting delivered energy so conversion never creates energy.
+     * Converts a connector-native amount to the network's native unit. The
+     * method rounds the result up, to deduct delivered energy. This way, the
+     * conversion never creates energy.
      */
     default long fromConnectorCeil(long amount, @Nonnull EnergyType connectorType) {
         return convert(amount, connectorType.getFEShift() - getEnergyType().getFEShift(), true);

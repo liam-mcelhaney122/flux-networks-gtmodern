@@ -32,8 +32,8 @@ public final class EnergyUtils {
     private static final Set<Item> ITEM_BLACKLIST = new HashSet<>();
 
     /**
-     * Bridge for exposing GT energy capabilities on flux tiles. Nonnull only when
-     * gtceu is loaded and enabled; every caller must null-check.
+     * This bridge exposes GT energy capabilities on flux tiles. It is nonnull
+     * only when gtceu is loaded and enabled. Every caller must check for null.
      */
     @Nullable
     private static IGTEnergyBridge sGTEnergyBridge;
@@ -51,13 +51,14 @@ public final class EnergyUtils {
 
     public static void register() {
         if (FluxConfig.enableGTCEU && ModList.get().isLoaded("gtceu")) {
-            // Connector order matters: Forge is registered (statically) before GTCEU and
-            // getConnector() is first-match. GT machines at the supported tag expose no
-            // ForgeCapabilities.ENERGY, so keeping Forge first guarantees no double
-            // conversion in either direction. Do not reorder.
+            // Do not reorder these connectors. The code registers Forge statically,
+            // before GTCEU, and getConnector() uses the first match. GT machines at
+            // the supported tag expose no ForgeCapabilities.ENERGY. So, keeping
+            // Forge first guarantees no double conversion in either direction.
             BLOCK_ENERGY_CONNECTORS.add(GTCEUEnergyConnector.INSTANCE);
             ITEM_ENERGY_CONNECTORS.add(GTCEUEnergyConnector.INSTANCE);
-            // the only place GTCEUCapabilityBridge may be instantiated (class-loading isolation)
+            // This is the only place that may create a GTCEUCapabilityBridge, for
+            // class-loading isolation.
             sGTEnergyBridge = new GTCEUCapabilityBridge();
         }
     }
