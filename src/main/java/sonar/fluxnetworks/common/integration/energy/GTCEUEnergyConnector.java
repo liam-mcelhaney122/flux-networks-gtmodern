@@ -150,7 +150,7 @@ public class GTCEUEnergyConnector implements IBlockEnergyConnector, IItemEnergyC
     public long receiveFrom(long amount, @Nonnull ItemStack stack, boolean simulate) {
         IElectricItem electricItem = FluxUtils.get(stack, GTCapability.CAPABILITY_ELECTRIC_ITEM);
         if (electricItem != null) {
-            return electricItem.discharge(amount, electricItem.getTier(), false, true, false);
+            return electricItem.discharge(amount, electricItem.getTier(), false, true, simulate);
         }
         return 0;
     }

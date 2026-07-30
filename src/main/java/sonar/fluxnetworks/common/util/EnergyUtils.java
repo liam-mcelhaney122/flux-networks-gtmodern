@@ -50,18 +50,6 @@ public final class EnergyUtils {
     }
 
     public static void register() {
-        /* TODO PORT OTHER MOD ENERGY HANDLERS.
-        if(Loader.isModLoaded("gregtech")) {
-            tileEnergyHandlers.add(GTEnergyHandler.INSTANCE);
-            ItemEnergyHandler.itemEnergyHandlers.add(GTEnergyHandler.INSTANCE);
-        }*/
-
-        // disable because of imbalance
-        /*if (ModList.get().isLoaded("ic2")) {
-            BLOCK_ENERGY_CONNECTORS.add(IC2EnergyHandler.INSTANCE);
-            ITEM_ENERGY_CONNECTORS.add(IC2EnergyHandler.INSTANCE);
-        }*/
-
         if (FluxConfig.enableGTCEU && ModList.get().isLoaded("gtceu")) {
             // Connector order matters: Forge is registered (statically) before GTCEU and
             // getConnector() is first-match. GT machines at the supported tag expose no

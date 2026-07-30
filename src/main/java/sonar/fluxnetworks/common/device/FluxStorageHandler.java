@@ -60,6 +60,18 @@ public abstract class FluxStorageHandler extends TransferHandler {
         }
     }
 
+    /**
+     * The maximum capacity of this storage, read from {@link FluxConfig} which is
+     * denominated in FE. Network-internal values are denominated in the network's
+     * native unit, so on an EU network the same raw number represents 4x the
+     * physical energy (1 EU = 4 FE).
+     * <p>
+     * TODO: converting this to network-native units (IEnergySystem#fromFE) would keep
+     *  physical capacity constant across network types, but the handler has no network
+     *  reference and this value is also read network-independently on the client
+     *  (renderers, GUI) and before a network is bound (setLimit during NBT load), so
+     *  it stays FE-denominated for now.
+     */
     public abstract long getMaxEnergyStorage();
 
     @Override

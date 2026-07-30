@@ -53,6 +53,13 @@ public abstract class TransferHandler {
     private boolean mDisableLimit;
 
     /**
+     * The energy type that {@link #mBuffer} and {@link #mLimit} are denominated in.
+     * Server only, persisted so the values can be re-denominated on reload if the
+     * network's energy type changed while this device was unloaded or disconnected.
+     */
+    private EnergyType mUnit = EnergyType.FE;
+
+    /**
      * @param limit the initial limit
      */
     protected TransferHandler(long limit) {
@@ -73,10 +80,32 @@ public abstract class TransferHandler {
 
     /**
      * Called when the network's energy type changed, re-denominates the internal
-     * buffer into the new unit (overflow-clamped).
+     * buffer and the user-set transfer limit into the new unit (overflow-clamped),
+     * so the physical energy and effective rate are preserved. The limit is skipped
+     * while bypassed ({@link #getDisableLimit()}), since it has no effect then.
      */
     public void onEnergyTypeChanged(@Nonnull EnergyType oldType, @Nonnull EnergyType newType) {
-        mBuffer = IEnergySystem.convert(mBuffer, oldType.getFEShift() - newType.getFEShift(), false);
+        final int shift = oldType.getFEShift() - newType.getFEShift();
+        mBuffer = IEnergySystem.convert(mBuffer, shift, false);
+        if (!mDisableLimit) {
+            // setLimit re-applies subclass clamping (e.g. storage capacity)
+            setLimit(IEnergySystem.convert(mLimit, shift, false));
+        }
+        mUnit = newType;
+    }
+
+    /**
+     * Re-denominates the internal values into the given network's energy type if they
+     * are still in another unit, i.e. the network's energy type changed while this
+     * device was unloaded or disconnected, so the stale-unit values loaded from this
+     * device's own chunk NBT don't silently gain or lose physical energy.
+     *
+     * @param type the connected network's energy type
+     */
+    public void reconcileEnergyUnit(@Nonnull EnergyType type) {
+        if (mUnit != type) {
+            onEnergyTypeChanged(mUnit, type);
+        }
     }
 
     /**
@@ -237,6 +266,7 @@ public abstract class TransferHandler {
                 tag.putBoolean(FluxConstants.SURGE_MODE, mSurgeMode);
                 tag.putLong(FluxConstants.LIMIT, mLimit);
                 tag.putBoolean(FluxConstants.DISABLE_LIMIT, mDisableLimit);
+                tag.putByte(FluxConstants.ENERGY_UNIT, mUnit.getId());
             }
             case FluxConstants.NBT_TILE_UPDATE, FluxConstants.NBT_PHANTOM_UPDATE -> {
                 tag.putLong(FluxConstants.CHANGE, mChange);
@@ -261,6 +291,8 @@ public abstract class TransferHandler {
                 mSurgeMode = tag.getBoolean(FluxConstants.SURGE_MODE);
                 mLimit = tag.getLong(FluxConstants.LIMIT);
                 mDisableLimit = tag.getBoolean(FluxConstants.DISABLE_LIMIT);
+                // missing key reads 0, i.e. FE, matching legacy saves
+                mUnit = EnergyType.fromId(tag.getByte(FluxConstants.ENERGY_UNIT));
             }
             case FluxConstants.NBT_TILE_UPDATE -> {
                 mChange = tag.getLong(FluxConstants.CHANGE);

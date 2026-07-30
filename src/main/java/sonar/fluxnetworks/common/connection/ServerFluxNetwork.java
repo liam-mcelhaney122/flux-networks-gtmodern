@@ -253,9 +253,25 @@ public class ServerFluxNetwork extends FluxNetwork {
     public boolean setEnergyType(@Nonnull EnergyType type) {
         final EnergyType oldType = getEnergyType();
         if (super.setEnergyType(type)) {
-            // re-denominate loaded devices' buffers, physical energy preserved
+            // re-denominate loaded devices' buffers and limits, physical energy preserved
             for (var d : getLogicalDevices(ANY)) {
                 d.getTransferHandler().onEnergyTypeChanged(oldType, type);
+            }
+            // devices queued for addition are in the connection map but not yet in
+            // the logical lists, cover them as well
+            for (var d : mToAdd) {
+                d.getTransferHandler().onEnergyTypeChanged(oldType, type);
+            }
+            // unloaded devices are recorded as phantoms holding raw NBT values,
+            // re-denominate them too so GUI display and network saves stay consistent.
+            // Note: an unloaded tile entity's own chunk NBT is unreachable from here,
+            // it keeps old-unit values (tagged with their unit) until its chunk is
+            // next loaded, then TransferHandler#reconcileEnergyUnit converts them
+            // when the tile reconnects, see TileFluxDevice#connect.
+            for (var d : mConnectionMap.values()) {
+                if (d instanceof PhantomFluxDevice phantom) {
+                    phantom.onEnergyTypeChanged(oldType, type);
+                }
             }
             return true;
         }

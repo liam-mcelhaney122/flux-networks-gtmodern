@@ -8,6 +8,8 @@ import net.minecraft.world.item.ItemStack;
 import sonar.fluxnetworks.api.FluxConstants;
 import sonar.fluxnetworks.api.device.FluxDeviceType;
 import sonar.fluxnetworks.api.device.IFluxDevice;
+import sonar.fluxnetworks.api.energy.EnergyType;
+import sonar.fluxnetworks.api.energy.IEnergySystem;
 import sonar.fluxnetworks.common.device.TileFluxDevice;
 import sonar.fluxnetworks.common.util.FluxUtils;
 
@@ -118,6 +120,21 @@ public class PhantomFluxDevice implements IFluxDevice {
             mForcedLoading = tag.getBoolean(FluxConstants.FORCED_LOADING);
             mChunkLoaded = tag.getBoolean(FluxConstants.CHUNK_LOADED);
             mChange = tag.getLong(FluxConstants.CHANGE);
+        }
+    }
+
+    /**
+     * Called when the network's energy type changed while this device is unloaded.
+     * Re-denominates the recorded buffer and limit into the new unit, mirroring
+     * {@link TransferHandler#onEnergyTypeChanged}, so this record stays consistent
+     * with loaded devices in the GUI and in network saves. Note this cannot touch
+     * the unloaded tile entity's own chunk NBT; see ServerFluxNetwork#setEnergyType.
+     */
+    public void onEnergyTypeChanged(@Nonnull EnergyType oldType, @Nonnull EnergyType newType) {
+        final int shift = oldType.getFEShift() - newType.getFEShift();
+        mBuffer = IEnergySystem.convert(mBuffer, shift, false);
+        if (!mDisableLimit) {
+            mLimit = IEnergySystem.convert(mLimit, shift, false);
         }
     }
 
