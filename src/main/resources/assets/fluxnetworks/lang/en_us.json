@@ -20,6 +20,8 @@
 	"tooltip.fluxnetworks.flux_point": "Provides energy to adjacent blocks actively, removing energy from your Flux Network",
 	"tooltip.fluxnetworks.flux_storage": "Stores energy for your Flux Network",
 	"tooltip.fluxnetworks.flux_storage_2": "Energy Capacity: %s",
+	"tooltip.fluxnetworks.flux_input_hatch": "Powered by a Flux Network, supplies EU to the multiblock",
+	"tooltip.fluxnetworks.flux_dynamo_hatch": "Feeds generated EU into a Flux Network",
 
 	"gui.fluxnetworks.tab.home": "Home",
 	"gui.fluxnetworks.tab.selection": "Network Selection",
@@ -139,5 +141,17 @@
 	"gui.fluxnetworks.access.superadmin": "Super Admin",
 
 	"gui.fluxnetworks.jei.creatingfluxrecipe": "Creating Flux",
-	"gui.fluxnetworks.jei.leftclickhelp": "Left click the %s"
+	"gui.fluxnetworks.jei.leftclickhelp": "Left click the %s",
+
+	"gui.fluxnetworks.hatch.no_network": "No Network",
+	"gui.fluxnetworks.hatch.buffer": "Buffer: %s",
+	"gui.fluxnetworks.hatch.change": "Change: %s",
+	"gui.fluxnetworks.hatch.networks": "Available Networks:",
+	"gui.fluxnetworks.hatch.join": "[Join]",
+	"gui.fluxnetworks.hatch.leave": "[Leave]",
+	"gui.fluxnetworks.hatch.password": "Network password (typed as plain text)",
+	"gui.fluxnetworks.hatch.surge.enabled": "Surge Mode: On",
+	"gui.fluxnetworks.hatch.surge.disabled": "Surge Mode: Off",
+	"gui.fluxnetworks.hatch.disable_limit.enabled": "Bypass Limit: On",
+	"gui.fluxnetworks.hatch.disable_limit.disabled": "Bypass Limit: Off"
 }

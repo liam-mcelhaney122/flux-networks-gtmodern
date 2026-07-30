@@ -222,3 +222,14 @@ if the author would rather not add new registry entries just for this.
 - Should the cleanroom requirement extend from Gargantuan Storage to Flux
   Controller too? Or is that too punishing for a networking mod's core
   block?
+
+## Update: the flux hatches exist now
+
+The GT integration layer registered two hatch lines, LV..UV at 2A:
+`fluxnetworks:flux_energy_input_hatch_<tier>` and
+`fluxnetworks:flux_dynamo_hatch_<tier>` (tier suffix in lowercase, e.g.
+`flux_energy_input_hatch_lv`). They currently have **no recipes** — they
+want GT recipes in a future pass, through the same addon-style datagen this
+document recommends. A natural shape: GT's own energy/dynamo hatch recipe
+of the matching tier, with the cable swapped for a Flux Plug (input hatch)
+or Flux Point (dynamo hatch) plus a Flux Core.

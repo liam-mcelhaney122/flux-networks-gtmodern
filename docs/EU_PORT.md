@@ -39,12 +39,16 @@ normalizes the amount with the network's `IEnergySystem`:
 is `GTCEUCapabilityBridge`
 (`common/integration/energy/GTCEUCapabilityBridge.java`). `IGTEnergyBridge`
 imports no `com.gregtechceu` types, so flux tiles can hold a reference to it
-unconditionally. Only two classes may import GT types:
-`GTCEUCapabilityBridge` and `GTCEUEnergyConnector`. `EnergyUtils.register()`
-(`common/util/EnergyUtils.java:52-63`) gates both behind
-`FluxConfig.enableGTCEU` **and** `ModList.get().isLoaded("gtceu")`. When
-either is false, `sGTEnergyBridge` stays `null`, the game never registers
-`GTCEUEnergyConnector`, and it never loads a GT class.
+unconditionally. The GT-importing set is exactly:
+`common/integration/energy/{GTCEUCapabilityBridge, GTCEUEnergyConnector}`
+plus every class in `common/integration/gtceu/` (the flux energy hatches).
+`EnergyUtils.register()` (`common/util/EnergyUtils.java:52-63`) gates the
+first two behind `FluxConfig.enableGTCEU` **and**
+`ModList.get().isLoaded("gtceu")`. When either is false, `sGTEnergyBridge`
+stays `null`, the game never registers `GTCEUEnergyConnector`, and it never
+loads a GT class from that pair. The `integration/gtceu` package is gated by
+mod presence alone: only the `isLoaded("gtceu")` block in `FluxNetworks`'s
+constructor and GT's own `@GTAddon` annotation scan reach it.
 `PlugEnergyContainer.acceptEnergyFromNetwork` credits whole amps only. It
 uses `EnergyMath.clampAmps`/`wholeAmps` (`api/energy/EnergyMath.java`)
 around a simulate-then-execute call into `FluxPlugHandler#receive`.
@@ -65,6 +69,92 @@ own chunk NBT still holds the old, tagged energy type. So,
 `TileFluxDevice#connect` calls `TransferHandler#reconcileEnergyUnit` on
 every (re)connect (`common/device/TileFluxDevice.java:191-213`), to catch
 up the device once its chunk loads.
+
+## Flux energy hatches
+
+**What they are.** `common/integration/gtceu/` adds two GT multiblock part
+lines, registered through a `@GTAddon` (`FluxGTAddon` →
+`FluxGTRegistration`): the **Flux Energy Input Hatch**
+(`fluxnetworks:flux_energy_input_hatch_<tier>`, `PartAbility.INPUT_ENERGY`)
+and the **Flux Dynamo Hatch**
+(`fluxnetworks:flux_dynamo_hatch_<tier>`, `PartAbility.OUTPUT_ENERGY`).
+Both exist for every tier LV..UV at 2A, and reuse GT's own
+`energy_hatch.input`/`energy_hatch.output` overlay models (no new assets).
+
+**Buffer-device model.** Each hatch machine
+(`FluxHatchPartMachine` and subclasses) implements `ITransferNode` directly
+on the `MetaMachine` — it is a full network member without being a block
+entity. The input hatch is a logical **point** backed by
+`FluxHatchPointHandler` (capacity `V[tier] * 16 * 2` EU); the dynamo hatch
+is a logical **plug** backed by `FluxHatchDynamoHandler` (capacity
+`V[tier] * 64 * 2` EU). The network fills or drains the buffer in its own
+native unit; the GT recipe path sees the buffer as an EU
+`NotifiableEnergyContainer` (`FluxHatchEnergyContainer`), which drains and
+credits whole EU only (`api/energy/HatchBufferMath`). The container's
+capability validator and side conditions are always-false, so GT cables and
+adjacent flux plugs/points see no capability — no double membership, no
+loops. The controller's EUt cap per hatch is `V[tier] * 2`, like a normal
+2A hatch.
+
+**GT-native UI and binding flow.** The hatch has no FluxMenu
+(`createMenu` returns null). Its GT fancy UI shows the bound network
+(colored name), buffer and change, and a server-built list of joinable
+networks with `[Join]`/`[Leave]` buttons. An encrypted network appears in
+the list once the typed password unlocks it
+(`ServerFluxNetwork.canPlayerAccess(Player, String)` is the single gate,
+re-checked server-side on click). Joining sets the clicking player as the
+hatch owner. Priority/limit inputs and surge/bypass toggles edit the
+transfer handler server-side. Settings persist in the machine's
+`saveCustomPersistedData` under a `FluxData` sub-tag (`NBT_SAVE_ALL` shape,
+minus color and chunk-loading).
+
+**Hatch caveats.**
+
+- No password masking: LDLib's `TextFieldWidget` shows typed characters as
+  plain text on the typing client. The field is write-only (null supplier),
+  so the server never echoes it back.
+- Registration rides on gtceu **presence** only, not `enableGTCEU`;
+  registry entries must be deterministic. With `enableGTCEU=false` the
+  hatch blocks exist but stay inert: the null GT bridge blocks the
+  first-tick reconnect, the UI open, and the join click.
+- The number-input and toggle widgets rely on the open-gate
+  (`shouldOpenUI` → `canPlayerAccess`); their responders do not re-check
+  access per click.
+- First-compile checks: `IMachineBlockEntity.getMetaMachine()` /
+  `MachineDefinition.asStack()` names, and the LDLib/Registrate gradle
+  coordinates (`build.gradle` TODOs), were verified against sources but
+  never compiled here.
+- Breaking a hatch drops a fresh item; hatch settings are lost
+  (`forDrop` writes nothing — rough draft).
+
+**In-game hatch test checklist.**
+
+- [ ] An EBF runs from a flux energy input hatch on an **EU** network, and
+      again on an **FE** network (4 FE = 1 EU at the drain boundary).
+- [ ] A GT generator multiblock with a flux dynamo hatch feeds a network,
+      and consumers (flux points, input hatches) receive that energy.
+- [ ] An idle multiblock wakes when the network refills the input hatch
+      (the `setOnRefill` → `notifyChanged` path).
+- [ ] A dynamo hatch stalls cleanly at zero network demand (buffer fills,
+      then generation pauses; no exceptions).
+- [ ] The GUI joins a public network, and an encrypted network via the
+      password field. Priority/limit/surge/bypass persist across a GUI
+      close and reopen.
+- [ ] Settings, buffer, and network binding survive a chunk reload and a
+      full server restart.
+- [ ] Switch the bound network FE↔EU while the hatch's chunk is unloaded,
+      then load it: the buffer re-denominates on reconnect
+      (`reconcileEnergyUnit`).
+- [ ] The hatch appears in the network's Connections tab, with a correct
+      display stack and live buffer values.
+- [ ] Breaking the hatch removes its network membership (no ghost
+      connection in the Connections tab).
+- [ ] A flux plug placed directly against a hatch shows no energy flow in
+      either direction (capability isolation).
+- [ ] A hatch bound *after* the multiblock formed still powers/feeds it
+      (bind-after-form).
+- [ ] The controller's recipe EUt caps at `V[tier] * 2` per input hatch,
+      like a normal 2A energy hatch.
 
 ## Known caveats
 

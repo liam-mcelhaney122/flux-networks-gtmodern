@@ -25,6 +25,18 @@ public class FluxNetworks {
         sModernUILoaded = ModList.get().isLoaded("modernui");
 
         FluxConfig.init();
+
+        // GT hatch registration rides on mod presence only. FluxConfig.enableGTCEU
+        // is a COMMON config value that is not loaded yet in this constructor, and
+        // registry entries must be deterministic across restarts anyway. With
+        // enableGTCEU=false the hatch blocks still exist, but they stay inert: the
+        // GT bridge is null, so the hatches cannot join networks.
+        // Class-loading note: FluxGTRegistration (and through it, GT classes) is
+        // only classloaded inside this guard, so the game never loads a GT class
+        // when the gtceu mod is absent.
+        if (ModList.get().isLoaded("gtceu")) {
+            sonar.fluxnetworks.common.integration.gtceu.FluxGTRegistration.earlyInit();
+        }
     }
 
     public static boolean isCuriosLoaded() {

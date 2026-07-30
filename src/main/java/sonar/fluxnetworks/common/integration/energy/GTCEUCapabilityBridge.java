@@ -1,6 +1,6 @@
 package sonar.fluxnetworks.common.integration.energy;
 
-import com.gregtechceu.gtceu.api.blockentity.IMachineBlockEntity;
+import com.gregtechceu.gtceu.api.machine.IMachineBlockEntity;
 import com.gregtechceu.gtceu.api.capability.IEnergyContainer;
 import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
 import net.minecraft.core.Direction;

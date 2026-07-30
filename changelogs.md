@@ -13,6 +13,17 @@
   chunk
 * Add MC-free unit tests for the energy conversion layer. Run them with
   `./gradlew test`
+* Add flux energy hatches, registered as a GT addon when GTCEU is installed:
+  * Flux Energy Input Hatch (LV..UV, 2A): a multiblock energy hatch that a
+    flux network powers directly, no cables
+  * Flux Dynamo Hatch (LV..UV, 2A): a dynamo hatch that feeds generated EU
+    into a flux network
+  * Both are full network members with a native GT UI: join/leave networks
+    (password supported), priority, limit, surge and bypass settings
+  * Buffers hold the network's own energy unit and move whole EU only, with
+    the same capacities as GT's 2A hatches
+  * GT cables and adjacent flux plugs/points cannot connect to a hatch, so
+    no energy loops or double membership
 * See `docs/EU_PORT.md` for architecture, caveats, and the in-game test
   checklist
 
