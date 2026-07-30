@@ -13,6 +13,7 @@ import icyllis.modernui.widget.AdapterView.OnItemSelectedListener;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import sonar.fluxnetworks.api.FluxTranslate;
+import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.api.gui.EnumNetworkColor;
 import sonar.fluxnetworks.api.network.SecurityLevel;
 import sonar.fluxnetworks.client.design.*;
@@ -31,6 +32,7 @@ import static icyllis.modernui.view.ViewGroup.LayoutParams.*;
 public class CreateTab extends Fragment {
 
     private SecurityLevel mSecurityLevel = SecurityLevel.PRIVATE;
+    private EnergyType mEnergyType = EnergyType.FE;
 
     private EditText mName;
     private EditText mPassword;
@@ -181,6 +183,70 @@ public class CreateTab extends Fragment {
         }
 
         {
+            var group = new LinearLayout(requireContext());
+            group.setOrientation(LinearLayout.HORIZONTAL);
+
+            {
+                var title = new TextView(requireContext());
+                title.setText(FluxTranslate.NETWORK_ENERGY.get());
+                title.setTextSize(16);
+                title.setTextColor(0xFF808080);
+                var params = new LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT, 1);
+                params.setMargins(content.dp(26), 0, content.dp(20), 0);
+                group.addView(title, params);
+            }
+
+            {
+                var spinner = new Spinner(requireContext());
+                var radius = content.dp(8);
+                spinner.setPopupBackgroundDrawable(new Drawable() {
+                    private final int mRadius = radius;
+
+                    @Override
+                    public void draw(@Nonnull Canvas canvas) {
+                        Rect b = getBounds();
+                        float inner = mRadius * 0.5f;
+                        Paint paint = Paint.obtain();
+                        paint.setColor(0xCF202020);
+                        canvas.drawRoundRect(b.left + inner, b.top + inner, b.right - inner, b.bottom - inner,
+                                mRadius, paint);
+                        paint.recycle();
+                    }
+
+                    @Override
+                    public boolean getPadding(@Nonnull Rect padding) {
+                        int r = (int) Math.ceil(mRadius);
+                        padding.set(r, r, r, r);
+                        return true;
+                    }
+                });
+                spinner.setGravity(Gravity.END);
+                spinner.setPadding(content.dp(8), dp2, content.dp(8), dp2);
+                spinner.setAdapter(new EnergyTypeAdapter());
+                spinner.setSelection(mEnergyType.getId());
+                spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        mEnergyType = (EnergyType) parent.getSelectedItem();
+                        updateViewStates();
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+                    }
+                });
+                var params = new LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
+                params.setMargins(content.dp(20), 0, content.dp(20), 0);
+                group.addView(spinner, params);
+            }
+
+            group.setBaselineAligned(true);
+
+            var params = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
+            content.addView(group, params);
+        }
+
+        {
             mPassword = FluxDesign.createTextField(requireContext());
             mPasswordBg = (RoundRectDrawable) mPassword.getBackground();
             mPassword.setHint("Password");
@@ -246,6 +312,7 @@ public class CreateTab extends Fragment {
                     mName.getText().toString(),
                     mSelectedColor,
                     mSecurityLevel,
+                    mEnergyType,
                     mPassword.getText().toString()));
             var params = new LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
             params.gravity = Gravity.CENTER;

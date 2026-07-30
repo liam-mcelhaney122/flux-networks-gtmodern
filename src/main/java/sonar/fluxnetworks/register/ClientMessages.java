@@ -12,6 +12,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import sonar.fluxnetworks.api.FluxConstants;
 import sonar.fluxnetworks.api.device.IFluxDevice;
+import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.api.network.SecurityLevel;
 import sonar.fluxnetworks.client.ClientCache;
 import sonar.fluxnetworks.common.connection.FluxMenu;
@@ -19,6 +20,7 @@ import sonar.fluxnetworks.common.connection.FluxNetwork;
 import sonar.fluxnetworks.common.device.TileFluxDevice;
 import sonar.fluxnetworks.common.util.FluxUtils;
 
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 import java.util.function.Supplier;
@@ -61,12 +63,13 @@ public class ClientMessages {
      * @param token must be valid
      */
     public static void createNetwork(int token, String name, int color,
-                                     SecurityLevel security, String password) {
+                                     SecurityLevel security, @Nonnull EnergyType energyType, String password) {
         var buf = Channel.buffer(Messages.C2S_CREATE_NETWORK);
         buf.writeByte(token);
         buf.writeUtf(name, 256);
         buf.writeInt(color);
         buf.writeByte(security.getId());
+        buf.writeByte(energyType.getId());
         if (security == SecurityLevel.ENCRYPTED) {
             buf.writeUtf(password, 256);
         }
@@ -118,13 +121,14 @@ public class ClientMessages {
     }
 
     public static void editNetwork(int token, FluxNetwork network, String name, int color,
-                                   SecurityLevel security, String password) {
+                                   SecurityLevel security, @Nonnull EnergyType energyType, String password) {
         var buf = Channel.buffer(Messages.C2S_EDIT_NETWORK);
         buf.writeByte(token);
         buf.writeVarInt(network.getNetworkID());
         buf.writeUtf(name, 256);
         buf.writeInt(color);
         buf.writeByte(security.getId());
+        buf.writeByte(energyType.getId());
         if (security == SecurityLevel.ENCRYPTED) {
             buf.writeUtf(password, 256);
         }

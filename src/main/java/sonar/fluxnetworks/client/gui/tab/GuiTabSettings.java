@@ -26,6 +26,7 @@ public class GuiTabSettings extends GuiTabEditAbstract {
     public GuiTabSettings(@Nonnull FluxMenu menu, @Nonnull Player player) {
         super(menu, player);
         mSecurityLevel = getNetwork().getSecurityLevel();
+        mEnergyType = getNetwork().getEnergyType();
     }
 
     public EnumNavigationTab getNavigationTab() {
@@ -112,7 +113,8 @@ public class GuiTabSettings extends GuiTabEditAbstract {
         if (mouseButton == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
             if (button == mApply) {
                 ClientMessages.editNetwork(getToken(), getNetwork(),
-                        mNetworkName.getValue(), mColorButton.mColor, mSecurityLevel, mPassword.getValue());
+                        mNetworkName.getValue(), mColorButton.mColor, mSecurityLevel, mEnergyType,
+                        mPassword.getValue());
                 mApply.setClickable(false);
             } else if (button == mDelete) {
                 ClientMessages.deleteNetwork(getToken(), getNetwork());

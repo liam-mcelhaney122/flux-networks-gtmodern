@@ -69,7 +69,7 @@ public class GuiTabCreate extends GuiTabEditAbstract {
             //C2SNetMsg.createNetwork(nameField.getText(), colorBtn.color, mSecurityLevel, passwordField.getText());
 
             ClientMessages.createNetwork(getToken(), mNetworkName.getValue(),
-                    mColorButton.mColor, mSecurityLevel, mPassword.getValue());
+                    mColorButton.mColor, mSecurityLevel, mEnergyType, mPassword.getValue());
             mCreate.setClickable(false);
         }
     }

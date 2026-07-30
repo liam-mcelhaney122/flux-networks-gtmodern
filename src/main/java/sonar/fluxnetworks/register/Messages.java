@@ -14,6 +14,7 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import sonar.fluxnetworks.FluxNetworks;
 import sonar.fluxnetworks.api.FluxConstants;
 import sonar.fluxnetworks.api.device.IFluxDevice;
+import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.api.network.SecurityLevel;
 import sonar.fluxnetworks.api.network.WirelessType;
 import sonar.fluxnetworks.common.capability.FluxPlayer;
@@ -330,6 +331,7 @@ public class Messages {
         final String name = payload.readUtf(256);
         final int color = payload.readInt();
         final SecurityLevel security = SecurityLevel.fromId(payload.readByte());
+        final EnergyType energyType = EnergyType.fromId(payload.readByte());
         final String password = security == SecurityLevel.ENCRYPTED ? payload.readUtf(256) : "";
 
         // validate
@@ -351,7 +353,7 @@ public class Messages {
                 response(token, FluxConstants.REQUEST_CREATE_NETWORK, FluxConstants.RESPONSE_REJECT, p);
                 return;
             }
-            if (FluxNetworkData.getInstance().createNetwork(p, name, color, security, password) != null) {
+            if (FluxNetworkData.getInstance().createNetwork(p, name, color, security, energyType, password) != null) {
                 response(token, FluxConstants.REQUEST_CREATE_NETWORK, FluxConstants.RESPONSE_SUCCESS, p);
             } else {
                 response(token, FluxConstants.REQUEST_CREATE_NETWORK, FluxConstants.RESPONSE_NO_SPACE, p);
@@ -448,6 +450,7 @@ public class Messages {
         final String name = payload.readUtf(256);
         final int color = payload.readInt();
         final SecurityLevel security = SecurityLevel.fromId(payload.readByte());
+        final EnergyType energyType = EnergyType.fromId(payload.readByte());
         final String password = security == SecurityLevel.ENCRYPTED ? payload.readUtf(256) : "";
 
         // validate
@@ -479,6 +482,7 @@ public class Messages {
                     changed = true;
                 }
                 changed |= network.setSecurityLevel(security);
+                changed |= network.setEnergyType(energyType);
                 if (!password.isEmpty()) {
                     ((ServerFluxNetwork) network).setPassword(password);
                     // silently changed

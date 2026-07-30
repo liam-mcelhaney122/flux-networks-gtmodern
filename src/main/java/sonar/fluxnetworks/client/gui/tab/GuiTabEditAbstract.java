@@ -5,6 +5,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.entity.player.Player;
 import org.lwjgl.glfw.GLFW;
 import sonar.fluxnetworks.api.FluxTranslate;
+import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.api.network.SecurityLevel;
 import sonar.fluxnetworks.client.gui.EnumNavigationTab;
 import sonar.fluxnetworks.client.gui.basic.*;
@@ -23,6 +24,7 @@ import javax.annotation.Nonnull;
 public abstract class GuiTabEditAbstract extends GuiTabCore {
 
     protected SecurityLevel mSecurityLevel;
+    protected EnergyType mEnergyType = EnergyType.FE;
     public ColorButton mColorButton;
     public FluxEditBox mNetworkName;
     public FluxEditBox mPassword;
@@ -65,8 +67,9 @@ public abstract class GuiTabEditAbstract extends GuiTabCore {
             gr.drawString(font,
                     FluxTranslate.NETWORK_SECURITY.get() + ": " + ChatFormatting.AQUA + mSecurityLevel.getName(),
                     leftPos + 16, topPos + 47, 0xFF808080);
-            //font.drawString(matrixStack, FluxTranslate.NETWORK_ENERGY.t() + ": " + TextFormatting.AQUA + energyType
-            // .getName(), 14, 78, 0x606060);
+            gr.drawString(font,
+                    FluxTranslate.NETWORK_ENERGY.get() + ": " + ChatFormatting.AQUA + mEnergyType.getName(),
+                    leftPos + 16, topPos + 78, 0xFF808080);
             gr.drawString(font, FluxTranslate.NETWORK_COLOR.get() + ":", leftPos + 16, topPos + 89, 0xFF808080);
 
             renderNetwork(gr, mNetworkName.getValue(), mColorButton.mColor, topPos + 126);
@@ -85,12 +88,11 @@ public abstract class GuiTabEditAbstract extends GuiTabCore {
                 onEditSettingsChanged();
                 return true;
             }
-            /*if (mouseX > guiLeft + 50 && mouseX < guiLeft + 150 && mouseY > guiTop + 76 && mouseY < getGuiTop() +
-            88) {
-                energyType = FluxUtils.incrementEnum(energyType, EnergyType.values());
+            if (mouseX >= leftPos + 36 && mouseX < leftPos + 96 && mouseY >= topPos + 79 && mouseY < topPos + 87) {
+                mEnergyType = FluxUtils.cycle(mEnergyType, EnergyType.VALUES);
                 onEditSettingsChanged();
                 return true;
-            }*/
+            }
         }
         return false;
     }
