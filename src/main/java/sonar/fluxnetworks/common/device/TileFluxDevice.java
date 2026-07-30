@@ -38,7 +38,7 @@ import java.util.function.Consumer;
  */
 @SuppressWarnings("ConstantConditions")
 @ParametersAreNonnullByDefault
-public abstract class TileFluxDevice extends BlockEntity implements IFluxDevice {
+public abstract class TileFluxDevice extends BlockEntity implements ITransferNode {
 
     private static final BlockEntityTicker<? extends TileFluxDevice> sTickerServer =
             (level, pos, state, tile) -> tile.onServerTick();

@@ -320,7 +320,7 @@ public class FluxNetwork {
      * @return a list of devices
      */
     @Nonnull
-    public List<TileFluxDevice> getLogicalDevices(int logic) {
+    public List<ITransferNode> getLogicalDevices(int logic) {
         return Collections.emptyList();
     }
 
@@ -339,7 +339,7 @@ public class FluxNetwork {
      * @param device the logical device
      * @return success or not
      */
-    public boolean enqueueConnectionAddition(@Nonnull TileFluxDevice device) {
+    public boolean enqueueConnectionAddition(@Nonnull ITransferNode device) {
         return true;
     }
 
@@ -349,7 +349,7 @@ public class FluxNetwork {
      * @param device the logical device
      * @param unload true if just chunk unload, false if it no longer belongs to this network
      */
-    public void enqueueConnectionRemoval(@Nonnull TileFluxDevice device, boolean unload) {
+    public void enqueueConnectionRemoval(@Nonnull ITransferNode device, boolean unload) {
     }
 
     /*@Override

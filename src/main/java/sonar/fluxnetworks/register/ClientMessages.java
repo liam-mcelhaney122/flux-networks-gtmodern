@@ -17,6 +17,7 @@ import sonar.fluxnetworks.api.network.SecurityLevel;
 import sonar.fluxnetworks.client.ClientCache;
 import sonar.fluxnetworks.common.connection.FluxMenu;
 import sonar.fluxnetworks.common.connection.FluxNetwork;
+import sonar.fluxnetworks.common.connection.ITransferNode;
 import sonar.fluxnetworks.common.device.TileFluxDevice;
 import sonar.fluxnetworks.common.util.FluxUtils;
 
@@ -36,7 +37,7 @@ import static sonar.fluxnetworks.register.Channel.sChannel;
 @ParametersAreNonnullByDefault
 public class ClientMessages {
 
-    public static void deviceBuffer(TileFluxDevice device, byte type) {
+    public static void deviceBuffer(ITransferNode device, byte type) {
         assert type > 0; // C2S positive
         var buf = Channel.buffer(Messages.C2S_DEVICE_BUFFER);
         buf.writeBlockPos(device.getBlockPos());
@@ -236,10 +237,13 @@ public class ClientMessages {
         payload.retain();
         looper.execute(() -> {
             LocalPlayer p = player.get();
-            if (p != null && p.clientLevel.getBlockEntity(payload.readBlockPos()) instanceof TileFluxDevice e) {
-                byte id = payload.readByte();
-                if (id < 0) {
-                    e.readPacketBuffer(payload, id);
+            if (p != null) {
+                ITransferNode e = FluxUtils.getTransferNode(p.clientLevel, payload.readBlockPos());
+                if (e != null) {
+                    byte id = payload.readByte();
+                    if (id < 0) {
+                        e.readPacketBuffer(payload, id);
+                    }
                 }
             }
             payload.release();

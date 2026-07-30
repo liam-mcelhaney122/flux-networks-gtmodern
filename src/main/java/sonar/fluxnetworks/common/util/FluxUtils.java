@@ -8,6 +8,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import sonar.fluxnetworks.api.FluxTranslate;
@@ -16,6 +17,7 @@ import sonar.fluxnetworks.api.device.IFluxDevice;
 import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.api.energy.FormatUtils;
 import sonar.fluxnetworks.common.connection.FluxNetwork;
+import sonar.fluxnetworks.common.connection.ITransferNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -58,6 +60,18 @@ public class FluxUtils {
             if (test.move(dir).equals(target)) {
                 return dir;
             }
+        }
+        return null;
+    }
+
+    /**
+     * Resolves the transfer node at a position: a flux device block entity, or (in a later
+     * commit) a GT machine that implements ITransferNode via the GT bridge.
+     */
+    @Nullable
+    public static ITransferNode getTransferNode(@Nonnull Level level, @Nonnull BlockPos pos) {
+        if (level.getBlockEntity(pos) instanceof ITransferNode node) {
+            return node;
         }
         return null;
     }

@@ -21,8 +21,8 @@ import sonar.fluxnetworks.common.capability.FluxPlayer;
 import sonar.fluxnetworks.common.connection.FluxMenu;
 import sonar.fluxnetworks.common.connection.FluxNetwork;
 import sonar.fluxnetworks.common.connection.FluxNetworkData;
+import sonar.fluxnetworks.common.connection.ITransferNode;
 import sonar.fluxnetworks.common.connection.ServerFluxNetwork;
-import sonar.fluxnetworks.common.device.TileFluxDevice;
 import sonar.fluxnetworks.common.item.ItemAdminConfigurator;
 import sonar.fluxnetworks.common.util.FluxUtils;
 
@@ -100,7 +100,7 @@ public class Messages {
      * @param type   for example, {@link FluxConstants#DEVICE_S2C_GUI_SYNC}
      */
     @Nonnull
-    public static FriendlyByteBuf makeDeviceBuffer(TileFluxDevice device, byte type) {
+    public static FriendlyByteBuf makeDeviceBuffer(ITransferNode device, byte type) {
         assert type < 0; // S2C negative
         var buf = Channel.buffer(S2C_DEVICE_BUFFER);
         buf.writeBlockPos(device.getBlockPos());
@@ -242,8 +242,9 @@ public class Messages {
         looper.execute(() -> {
             ServerPlayer p = player.get();
             try {
-                if (p != null && p.level().getBlockEntity(payload.readBlockPos()) instanceof TileFluxDevice e) {
-                    if (e.canPlayerAccess(p)) {
+                if (p != null) {
+                    ITransferNode e = FluxUtils.getTransferNode(p.level(), payload.readBlockPos());
+                    if (e != null && e.canPlayerAccess(p)) {
                         byte id = payload.readByte();
                         if (id > 0) {
                             e.readPacketBuffer(payload, id);
@@ -311,9 +312,8 @@ public class Messages {
                 return;
             }
             try {
-                if (p.level().isLoaded(pos) &&
-                        p.level().getBlockEntity(pos) instanceof TileFluxDevice e &&
-                        e.canPlayerAccess(p)) {
+                final ITransferNode e = p.level().isLoaded(pos) ? FluxUtils.getTransferNode(p.level(), pos) : null;
+                if (e != null && e.canPlayerAccess(p)) {
                     e.readCustomTag(tag, FluxConstants.NBT_TILE_SETTINGS);
                 } else {
                     response(token, FluxConstants.REQUEST_EDIT_TILE, FluxConstants.RESPONSE_REJECT, p);
@@ -408,7 +408,8 @@ public class Messages {
             if (p == null) {
                 return;
             }
-            if (p.level().getBlockEntity(pos) instanceof TileFluxDevice e) {
+            final ITransferNode e = FluxUtils.getTransferNode(p.level(), pos);
+            if (e != null) {
                 if (e.getNetworkID() == networkID) {
                     return;
                 }
@@ -478,7 +479,7 @@ public class Messages {
                 boolean changed = network.setNetworkName(name);
                 if (network.setNetworkColor(color)) {
                     // update renderer
-                    network.getLogicalDevices(FluxNetwork.ANY).forEach(TileFluxDevice::sendBlockUpdate);
+                    network.getLogicalDevices(FluxNetwork.ANY).forEach(ITransferNode::sendBlockUpdate);
                     changed = true;
                 }
                 changed |= network.setSecurityLevel(security);
@@ -615,7 +616,7 @@ public class Messages {
                 try {
                     for (GlobalPos pos : list) {
                         IFluxDevice f = network.getConnectionByPos(pos);
-                        if (f instanceof TileFluxDevice e) {
+                        if (f instanceof ITransferNode e) {
                             e.readCustomTag(tag, FluxConstants.NBT_TILE_SETTINGS);
                         }
                     }
@@ -721,7 +722,7 @@ public class Messages {
             if (network.getPlayerAccess(p).canEdit()) {
                 for (GlobalPos pos : list) {
                     IFluxDevice f = network.getConnectionByPos(pos);
-                    if (f instanceof TileFluxDevice e) {
+                    if (f instanceof ITransferNode e) {
                         e.disconnect();
                     }
                 }

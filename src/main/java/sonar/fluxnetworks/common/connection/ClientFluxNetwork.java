@@ -5,7 +5,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import sonar.fluxnetworks.api.network.AccessLevel;
 import sonar.fluxnetworks.client.ClientCache;
-import sonar.fluxnetworks.common.device.TileFluxDevice;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -23,7 +22,7 @@ public class ClientFluxNetwork extends FluxNetwork {
 
     @Nonnull
     @Override
-    public List<TileFluxDevice> getLogicalDevices(int logic) {
+    public List<ITransferNode> getLogicalDevices(int logic) {
         throw new IllegalStateException();
     }
 
@@ -33,12 +32,12 @@ public class ClientFluxNetwork extends FluxNetwork {
     }
 
     @Override
-    public boolean enqueueConnectionAddition(@Nonnull TileFluxDevice device) {
+    public boolean enqueueConnectionAddition(@Nonnull ITransferNode device) {
         throw new IllegalStateException();
     }
 
     @Override
-    public void enqueueConnectionRemoval(@Nonnull TileFluxDevice device, boolean unload) {
+    public void enqueueConnectionRemoval(@Nonnull ITransferNode device, boolean unload) {
         throw new IllegalStateException();
     }
 

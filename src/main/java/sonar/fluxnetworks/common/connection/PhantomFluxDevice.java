@@ -51,7 +51,7 @@ public class PhantomFluxDevice implements IFluxDevice {
      * @param device the loaded device entity
      */
     @Nonnull
-    public static PhantomFluxDevice makeUnloaded(@Nonnull TileFluxDevice device) {
+    public static PhantomFluxDevice makeUnloaded(@Nonnull ITransferNode device) {
         PhantomFluxDevice t = new PhantomFluxDevice();
         t.mNetworkID = device.getNetworkID();
         t.mCustomName = device.getCustomName();

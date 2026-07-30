@@ -9,7 +9,6 @@ import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.api.energy.IEnergySystem;
 import sonar.fluxnetworks.api.network.*;
 import sonar.fluxnetworks.common.capability.FluxPlayer;
-import sonar.fluxnetworks.common.device.TileFluxDevice;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Array;
@@ -20,7 +19,7 @@ import java.util.*;
  */
 public class ServerFluxNetwork extends FluxNetwork {
 
-    private static final Comparator<TileFluxDevice> sDescendingOrder =
+    private static final Comparator<ITransferNode> sDescendingOrder =
             (lhs, rhs) -> Integer.compare(rhs.getTransferHandler().getPriority(),
                     lhs.getTransferHandler().getPriority());
 
@@ -30,11 +29,11 @@ public class ServerFluxNetwork extends FluxNetwork {
     private static final Class<?>[] sLogicalTypes =
             {IFluxDevice.class, IFluxPlug.class, IFluxPoint.class, IFluxStorage.class, IFluxController.class};
 
-    private final ArrayList<TileFluxDevice>[] mDevices;
+    private final ArrayList<ITransferNode>[] mDevices;
 
     // LinkedList doesn't create large arrays, should be better
-    private final LinkedList<TileFluxDevice> mToAdd = new LinkedList<>();
-    private final LinkedList<TileFluxDevice> mToRemove = new LinkedList<>();
+    private final LinkedList<ITransferNode> mToAdd = new LinkedList<>();
+    private final LinkedList<ITransferNode> mToRemove = new LinkedList<>();
 
     private boolean mSortConnections = true;
 
@@ -46,8 +45,8 @@ public class ServerFluxNetwork extends FluxNetwork {
     private String mPassword;
 
     {
-        @SuppressWarnings("unchecked") final ArrayList<TileFluxDevice>[] devices =
-                (ArrayList<TileFluxDevice>[]) Array.newInstance(ArrayList.class, sLogicalTypes.length);
+        @SuppressWarnings("unchecked") final ArrayList<ITransferNode>[] devices =
+                (ArrayList<ITransferNode>[]) Array.newInstance(ArrayList.class, sLogicalTypes.length);
         Arrays.setAll(devices, type -> new ArrayList<>());
         mDevices = devices;
     }
@@ -92,7 +91,7 @@ public class ServerFluxNetwork extends FluxNetwork {
     }*/
 
     private void handleConnectionQueue() {
-        TileFluxDevice device;
+        ITransferNode device;
         while ((device = mToAdd.poll()) != null) {
             for (int type = 0; type < sLogicalTypes.length; type++) {
                 if (sLogicalTypes[type].isInstance(device)) {
@@ -120,7 +119,7 @@ public class ServerFluxNetwork extends FluxNetwork {
 
     @Nonnull
     @Override
-    public ArrayList<TileFluxDevice> getLogicalDevices(int logic) {
+    public ArrayList<ITransferNode> getLogicalDevices(int logic) {
         return mDevices[logic];
     }
 
@@ -134,13 +133,13 @@ public class ServerFluxNetwork extends FluxNetwork {
 
         final IEnergySystem es = getEnergySystem();
 
-        List<TileFluxDevice> devices = getLogicalDevices(ANY);
+        List<ITransferNode> devices = getLogicalDevices(ANY);
         for (var d : devices) {
             d.getTransferHandler().onCycleStart(es);
         }
 
-        List<TileFluxDevice> plugs = getLogicalDevices(PLUG);
-        List<TileFluxDevice> points = getLogicalDevices(POINT);
+        List<ITransferNode> plugs = getLogicalDevices(PLUG);
+        List<ITransferNode> points = getLogicalDevices(POINT);
         if (!points.isEmpty() && !plugs.isEmpty()) {
             // push into stack because they called too many times below
             final TransferIterator plugIterator = mPlugTransferIterator.reset(plugs);
@@ -148,8 +147,8 @@ public class ServerFluxNetwork extends FluxNetwork {
             CYCLE:
             while (pointIterator.hasNext()) {
                 while (plugIterator.hasNext()) {
-                    TileFluxDevice plug = plugIterator.next();
-                    TileFluxDevice point = pointIterator.next();
+                    ITransferNode plug = plugIterator.next();
+                    ITransferNode point = pointIterator.next();
                     if (plug.getDeviceType() == point.getDeviceType()) {
                         break CYCLE; // Storage always have the lowest priority, the cycle can be broken here.
                     }
@@ -208,7 +207,7 @@ public class ServerFluxNetwork extends FluxNetwork {
     @Override
     public void onDelete() {
         super.onDelete();
-        getLogicalDevices(ANY).forEach(TileFluxDevice::disconnect);
+        getLogicalDevices(ANY).forEach(ITransferNode::disconnect);
         Arrays.fill(mDevices, null);
         mToAdd.clear();
         mToRemove.clear();
@@ -220,7 +219,7 @@ public class ServerFluxNetwork extends FluxNetwork {
     }
 
     @Override
-    public boolean enqueueConnectionAddition(@Nonnull TileFluxDevice device) {
+    public boolean enqueueConnectionAddition(@Nonnull ITransferNode device) {
         if (device.getDeviceType().isController() && getLogicalDevices(CONTROLLER).size() > 0) {
             return false;
         }
@@ -234,7 +233,7 @@ public class ServerFluxNetwork extends FluxNetwork {
     }
 
     @Override
-    public void enqueueConnectionRemoval(@Nonnull TileFluxDevice device, boolean unload) {
+    public void enqueueConnectionRemoval(@Nonnull ITransferNode device, boolean unload) {
         if (!mToRemove.contains(device) && getLogicalDevices(ANY).contains(device)) {
             mToRemove.offer(device);
             mToAdd.remove(device);
