@@ -1,3 +1,16 @@
+### Unreleased - GregTech EU port
+* Add per-network energy unit (FE or EU) with an injected `IEnergySystem` doing
+  all boundary conversion (1 EU = 4 FE), so network-internal math stays in one
+  unit at a time
+* Expose GT energy containers on flux plugs/points behind `enableGTCEU`, gated on
+  GTCEU being installed, so GT cables/generators connect directly
+* Harden the GTCEU connector: whole-amp acceptance, honest headroom advertising
+  so generators idle at zero demand, overflow-safe amp/voltage math
+* Re-denominate each device's buffer and limit when its network's energy type
+  changes, including devices reconnecting from an unloaded chunk
+* Add MC-free unit tests for the energy conversion layer (`./gradlew test`)
+* See `docs/EU_PORT.md` for architecture, caveats, and the in-game test checklist
+
 ### Changelog 1.20.1-7.2.1.15 (2024-04-04)
 * Add GTCEU Modern support (configurable in common.toml)
 * Improve GTEU transfer, allowing multiple amps

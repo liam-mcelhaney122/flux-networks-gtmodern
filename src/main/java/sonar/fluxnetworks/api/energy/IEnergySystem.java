@@ -61,7 +61,7 @@ public interface IEnergySystem {
         }
         if (shift < 0) {
             if (ceil) {
-                return (amount + (1L << -shift) - 1) >> -shift;
+                return amount == 0 ? 0 : ((amount - 1) >> -shift) + 1;
             }
             return amount >> -shift;
         }

@@ -1,7 +1,5 @@
 package sonar.fluxnetworks.api.energy;
 
-import sonar.fluxnetworks.common.util.FluxUtils;
-
 import javax.annotation.Nonnull;
 import java.text.NumberFormat;
 
@@ -62,7 +60,7 @@ public enum EnergyType {
 
     @Nonnull
     public String getUsageCompact(long in) {
-        return FluxUtils.compact(in, usage);
+        return FormatUtils.compact(in, usage);
     }
 
     @Nonnull
@@ -72,6 +70,6 @@ public enum EnergyType {
 
     @Nonnull
     public String getStorageCompact(long in) {
-        return FluxUtils.compact(in, storage);
+        return FormatUtils.compact(in, storage);
     }
 }

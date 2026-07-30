@@ -5,6 +5,7 @@ import com.gregtechceu.gtceu.api.capability.forge.GTCapability;
 import net.minecraft.core.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
+import sonar.fluxnetworks.api.energy.EnergyMath;
 import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.api.energy.IEnergySystem;
 import sonar.fluxnetworks.common.connection.FluxNetwork;
@@ -87,10 +88,10 @@ public class GTCEUCapabilityBridge implements IGTEnergyBridge {
             final FluxPlugHandler handler = mPlug.getTransferHandler();
             final long limiter = network.getBufferLimiter();
             // overflow clamp so amps * nativePerAmp stays in long range
-            long amps = Math.min(amperage, Long.MAX_VALUE / nativePerAmp);
+            long amps = EnergyMath.clampAmps(amperage, nativePerAmp);
             final long sim = handler.receive(amps * nativePerAmp, mSide, true, limiter);
             // whole amps only
-            amps = Math.min(amps, sim / nativePerAmp);
+            amps = EnergyMath.wholeAmps(amps, nativePerAmp, sim);
             if (amps > 0) {
                 handler.receive(amps * nativePerAmp, mSide, false, limiter);
                 return amps;

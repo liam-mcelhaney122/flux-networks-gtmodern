@@ -14,6 +14,7 @@ import sonar.fluxnetworks.api.FluxTranslate;
 import sonar.fluxnetworks.api.device.FluxDeviceType;
 import sonar.fluxnetworks.api.device.IFluxDevice;
 import sonar.fluxnetworks.api.energy.EnergyType;
+import sonar.fluxnetworks.api.energy.FormatUtils;
 import sonar.fluxnetworks.common.connection.FluxNetwork;
 
 import javax.annotation.Nonnull;
@@ -21,9 +22,6 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 
 public class FluxUtils {
-
-    private static final double[] COMPACT_SCALE = new double[]{0.001D, 0.000_001D, 0.000_000_001D, 0.000_000_000_001D,
-            0.000_000_000_000_001D, 0.000_000_000_000_000_001D};
 
     /**
      * A read-only array avoided new object creation.
@@ -275,21 +273,11 @@ public class FluxUtils {
      * @return compact string
      */
     public static String compact(long in) {
-        if (in < 1000) {
-            return Long.toString(in);
-        }
-        int level = (int) (Math.log10(in) / 3) - 1;
-        char pre = "kMGTPE".charAt(level);
-        return String.format("%.1f%c", in * COMPACT_SCALE[level], pre);
+        return FormatUtils.compact(in);
     }
 
     public static String compact(long in, String suffix) {
-        if (in < 1000) {
-            return in + " " + suffix;
-        }
-        int level = (int) (Math.log10(in) / 3) - 1;
-        char pre = "kMGTPE".charAt(level);
-        return String.format("%.1f %c%s", in * COMPACT_SCALE[level], pre, suffix);
+        return FormatUtils.compact(in, suffix);
     }
 
     /*public static String format(long in, NumberFormatType style, EnergyType energy, boolean usage) {
