@@ -12,6 +12,8 @@ import sonar.fluxnetworks.api.FluxCapabilities;
 import sonar.fluxnetworks.api.device.FluxDeviceType;
 import sonar.fluxnetworks.api.device.IFluxPoint;
 import sonar.fluxnetworks.api.energy.IFNEnergyStorage;
+import sonar.fluxnetworks.common.integration.energy.IGTEnergyBridge;
+import sonar.fluxnetworks.common.util.EnergyUtils;
 import sonar.fluxnetworks.common.util.FluxGuiStack;
 import sonar.fluxnetworks.register.RegistryBlockEntityTypes;
 
@@ -24,6 +26,9 @@ public class TileFluxPoint extends TileFluxConnector implements IFluxPoint {
 
     @Nullable
     private LazyOptional<?> mEnergyCap;
+
+    @Nullable
+    private LazyOptional<?> mGTEnergyCap;
 
     public TileFluxPoint(@Nonnull BlockPos pos, @Nonnull BlockState state) {
         super(RegistryBlockEntityTypes.FLUX_POINT.get(), pos, state);
@@ -54,6 +59,10 @@ public class TileFluxPoint extends TileFluxConnector implements IFluxPoint {
             mEnergyCap.invalidate();
             mEnergyCap = null;
         }
+        if (mGTEnergyCap != null) {
+            mGTEnergyCap.invalidate();
+            mGTEnergyCap = null;
+        }
     }
 
     @Nonnull
@@ -67,6 +76,13 @@ public class TileFluxPoint extends TileFluxConnector implements IFluxPoint {
                     mEnergyCap = LazyOptional.of(() -> storage);
                 }
                 return mEnergyCap.cast();
+            }
+            final IGTEnergyBridge bridge = EnergyUtils.getGTEnergyBridge();
+            if (bridge != null && bridge.isEnergyContainerCapability(cap)) {
+                if (mGTEnergyCap == null) {
+                    mGTEnergyCap = bridge.createPointEnergyContainer(this);
+                }
+                return mGTEnergyCap.cast();
             }
         }
         return super.getCapability(cap, side);

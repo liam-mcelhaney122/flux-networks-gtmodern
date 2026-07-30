@@ -13,6 +13,8 @@ import sonar.fluxnetworks.api.device.FluxDeviceType;
 import sonar.fluxnetworks.api.device.IFluxPlug;
 import sonar.fluxnetworks.api.energy.IEnergySystem;
 import sonar.fluxnetworks.api.energy.IFNEnergyStorage;
+import sonar.fluxnetworks.common.integration.energy.IGTEnergyBridge;
+import sonar.fluxnetworks.common.util.EnergyUtils;
 import sonar.fluxnetworks.common.util.FluxGuiStack;
 import sonar.fluxnetworks.common.util.FluxUtils;
 import sonar.fluxnetworks.register.RegistryBlockEntityTypes;
@@ -25,6 +27,7 @@ public class TileFluxPlug extends TileFluxConnector implements IFluxPlug {
     private final FluxPlugHandler mHandler = new FluxPlugHandler();
 
     private final LazyOptional<?>[] mEnergyCaps = new LazyOptional[FluxUtils.DIRECTIONS.length];
+    private final LazyOptional<?>[] mGTEnergyCaps = new LazyOptional[FluxUtils.DIRECTIONS.length];
 
     public TileFluxPlug(@Nonnull BlockPos pos, @Nonnull BlockState state) {
         super(RegistryBlockEntityTypes.FLUX_PLUG.get(), pos, state);
@@ -57,6 +60,12 @@ public class TileFluxPlug extends TileFluxConnector implements IFluxPlug {
                 mEnergyCaps[i] = null;
             }
         }
+        for (int i = 0, e = mGTEnergyCaps.length; i < e; i++) {
+            if (mGTEnergyCaps[i] != null) {
+                mGTEnergyCaps[i].invalidate();
+                mGTEnergyCaps[i] = null;
+            }
+        }
     }
 
     @Nonnull
@@ -71,6 +80,17 @@ public class TileFluxPlug extends TileFluxConnector implements IFluxPlug {
                             side == null ? Direction.from3DDataValue(0) : side);
                     handler = LazyOptional.of(() -> storage);
                     mEnergyCaps[index] = handler;
+                }
+                return handler.cast();
+            }
+            final IGTEnergyBridge bridge = EnergyUtils.getGTEnergyBridge();
+            if (bridge != null && bridge.isEnergyContainerCapability(cap)) {
+                final int index = side == null ? 0 : side.get3DDataValue();
+                LazyOptional<?> handler = mGTEnergyCaps[index];
+                if (handler == null) {
+                    handler = bridge.createPlugEnergyContainer(this,
+                            side == null ? Direction.from3DDataValue(0) : side);
+                    mGTEnergyCaps[index] = handler;
                 }
                 return handler.cast();
             }
