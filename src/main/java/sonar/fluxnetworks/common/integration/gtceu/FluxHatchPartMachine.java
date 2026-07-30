@@ -502,7 +502,9 @@ public abstract class FluxHatchPartMachine extends TieredIOPartMachine implement
      */
     @Override
     public Widget createUIWidget() {
-        WidgetGroup root = new WidgetGroup(0, 0, 200, 120);
+        // Height 126, not 120: NumberInputWidget hardcodes its children to 20 px
+        // tall, so the two number rows at y = 102 end at y = 122.
+        WidgetGroup root = new WidgetGroup(0, 0, 200, 126);
         // The panel reference is captured by both lambdas. The text supplier
         // runs once inside the constructor, before the assignment, so it must
         // accept a null panel.
