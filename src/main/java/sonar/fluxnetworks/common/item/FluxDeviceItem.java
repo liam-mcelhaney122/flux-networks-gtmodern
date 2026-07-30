@@ -10,7 +10,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import sonar.fluxnetworks.api.FluxConstants;
 import sonar.fluxnetworks.api.FluxTranslate;
-import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.client.ClientCache;
 import sonar.fluxnetworks.common.block.FluxStorageBlock;
 import sonar.fluxnetworks.common.connection.FluxNetwork;
@@ -51,7 +50,7 @@ public class FluxDeviceItem extends BlockItem {
 
             if (tag.contains(FluxConstants.LIMIT)) {
                 tooltip.add(Component.literal(ChatFormatting.BLUE + FluxTranslate.TRANSFER_LIMIT.get() + ": " +
-                        ChatFormatting.RESET + EnergyType.FE.getStorage(tag.getLong(FluxConstants.LIMIT))));
+                        ChatFormatting.RESET + network.getEnergyType().getStorage(tag.getLong(FluxConstants.LIMIT))));
             }
 
             if (tag.contains(FluxConstants.PRIORITY)) {
@@ -61,7 +60,7 @@ public class FluxDeviceItem extends BlockItem {
 
             if (tag.contains(FluxConstants.BUFFER)) {
                 tooltip.add(Component.literal(ChatFormatting.BLUE + FluxTranslate.INTERNAL_BUFFER.get() + ": " +
-                        ChatFormatting.RESET + EnergyType.FE.getStorage(tag.getLong(FluxConstants.BUFFER))));
+                        ChatFormatting.RESET + network.getEnergyType().getStorage(tag.getLong(FluxConstants.BUFFER))));
             } else if (tag.contains(FluxConstants.ENERGY)) {
                 long energy = tag.getLong(FluxConstants.ENERGY);
                 Block block = getBlock();
@@ -71,7 +70,7 @@ public class FluxDeviceItem extends BlockItem {
                 else
                     percentage = 0;
                 tooltip.add(Component.literal(ChatFormatting.BLUE + FluxTranslate.ENERGY_STORED.get() + ": " +
-                        ChatFormatting.RESET + EnergyType.FE.getStorage(energy) + String.format(" (%.1f%%)",
+                        ChatFormatting.RESET + network.getEnergyType().getStorage(energy) + String.format(" (%.1f%%)",
                         percentage * 100)));
             }
 

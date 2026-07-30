@@ -7,7 +7,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import sonar.fluxnetworks.api.FluxConstants;
 import sonar.fluxnetworks.api.FluxTranslate;
-import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.common.connection.*;
 import sonar.fluxnetworks.register.ClientMessages;
 
@@ -35,8 +34,8 @@ public class GuiTabDetailedSelection extends GuiTabSelection {
         gr.pose().pushPose();
         gr.pose().scale(0.75f, 0.75f, 1);
         String text = "C: " + element.getStatistics().getConnectionCount();
-        text += ", I: " + EnergyType.FE.getUsageCompact(element.getStatistics().energyInput);
-        text += ", O: " + EnergyType.FE.getUsageCompact(element.getStatistics().energyOutput);
+        text += ", I: " + element.getEnergyType().getUsageCompact(element.getStatistics().energyInput);
+        text += ", O: " + element.getEnergyType().getUsageCompact(element.getStatistics().energyOutput);
         text += ", T: " + element.getStatistics().averageTickMicro + " \u00b5s/t";
         gr.drawString(font, text,
                 (int) ((x + 4) / 0.75), (int) ((y + 11) / 0.75), selected ? 0xffffff : 0x808080);
@@ -56,13 +55,13 @@ public class GuiTabDetailedSelection extends GuiTabSelection {
         components.add(FluxTranslate.CONTROLLERS.makeComponent().append(ChatFormatting.GRAY + ": " +
                 ChatFormatting.RESET + stats.fluxControllerCount));
         components.add(FluxTranslate.INPUT.makeComponent().append(ChatFormatting.GRAY + ": " + ChatFormatting.RESET +
-                EnergyType.FE.getUsageCompact(stats.energyInput)));
+                element.getEnergyType().getUsageCompact(stats.energyInput)));
         components.add(FluxTranslate.OUTPUT.makeComponent().append(ChatFormatting.GRAY + ": " + ChatFormatting.RESET +
-                EnergyType.FE.getUsageCompact(stats.energyOutput)));
+                element.getEnergyType().getUsageCompact(stats.energyOutput)));
         components.add(FluxTranslate.BUFFER.makeComponent().append(ChatFormatting.GRAY + ": " + ChatFormatting.RESET +
-                EnergyType.FE.getStorageCompact(stats.totalBuffer)));
+                element.getEnergyType().getStorageCompact(stats.totalBuffer)));
         components.add(FluxTranslate.ENERGY.makeComponent().append(ChatFormatting.GRAY + ": " + ChatFormatting.RESET +
-                EnergyType.FE.getStorageCompact(stats.totalEnergy)));
+                element.getEnergyType().getStorageCompact(stats.totalEnergy)));
         components.add(FluxTranslate.AVERAGE_TICK.makeComponent().append(": " + stats.averageTickMicro + " \u00b5s/t"));
         return components;
     }

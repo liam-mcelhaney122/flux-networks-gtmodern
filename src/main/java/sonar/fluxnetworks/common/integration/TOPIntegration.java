@@ -13,7 +13,6 @@ import sonar.fluxnetworks.FluxConfig;
 import sonar.fluxnetworks.FluxNetworks;
 import sonar.fluxnetworks.api.FluxConstants;
 import sonar.fluxnetworks.api.FluxTranslate;
-import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.common.device.TileFluxDevice;
 import sonar.fluxnetworks.common.util.FluxUtils;
 
@@ -54,16 +53,16 @@ public class TOPIntegration implements Function<ITheOneProbe, Void> {
                     probeInfo.text(FluxTranslate.ERROR_NO_SELECTED.makeComponent().withStyle(ChatFormatting.AQUA));
                 }
 
-                probeInfo.text(Component.literal(FluxUtils.getTransferInfo(device, EnergyType.FE)));
+                probeInfo.text(Component.literal(FluxUtils.getTransferInfo(device, device.getNetwork().getEnergyType())));
 
                 if (player.isShiftKeyDown()) {
                     if (device.getDeviceType().isStorage()) {
                         probeInfo.text(FluxTranslate.ENERGY_STORED.makeComponent()
-                                .append(": " + ChatFormatting.GREEN + EnergyType.FE.getStorage(device.getTransferBuffer()))
+                                .append(": " + ChatFormatting.GREEN + device.getNetwork().getEnergyType().getStorage(device.getTransferBuffer()))
                         );
                     } else {
                         probeInfo.text(FluxTranslate.INTERNAL_BUFFER.makeComponent()
-                                .append(": " + ChatFormatting.GREEN + EnergyType.FE.getStorage(device.getTransferBuffer()))
+                                .append(": " + ChatFormatting.GREEN + device.getNetwork().getEnergyType().getStorage(device.getTransferBuffer()))
                         );
                     }
                 }/* else {
@@ -91,7 +90,7 @@ public class TOPIntegration implements Function<ITheOneProbe, Void> {
                     );
                 } else {
                     probeInfo.text(FluxTranslate.TRANSFER_LIMIT.makeComponent()
-                            .append(": " + ChatFormatting.GREEN + EnergyType.FE.getUsage(device.getRawLimit()))
+                            .append(": " + ChatFormatting.GREEN + device.getNetwork().getEnergyType().getUsage(device.getRawLimit()))
                     );
                 }
 

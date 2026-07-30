@@ -10,7 +10,6 @@ import org.lwjgl.glfw.GLFW;
 import sonar.fluxnetworks.api.FluxConstants;
 import sonar.fluxnetworks.api.FluxTranslate;
 import sonar.fluxnetworks.api.device.IFluxDevice;
-import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.client.gui.EnumNavigationTab;
 import sonar.fluxnetworks.client.gui.basic.GuiButtonCore;
 import sonar.fluxnetworks.client.gui.basic.GuiTabPages;
@@ -135,7 +134,7 @@ public class GuiTabConnections extends GuiTabPages<IFluxDevice> {
         if (element.isChunkLoaded()) {
             gr.pose().pushPose();
             gr.pose().scale(0.75f, 0.75f, 1);
-            gr.drawString(font, FluxUtils.getTransferInfo(element, EnergyType.FE), (x + 20) / 0.75f,
+            gr.drawString(font, FluxUtils.getTransferInfo(element, getNetwork().getEnergyType()), (x + 20) / 0.75f,
                     (y + 10) / 0.75f, textColor, true);
             gr.pose().popPose();
             titleY = y + 2;
@@ -171,22 +170,22 @@ public class GuiTabConnections extends GuiTabPages<IFluxDevice> {
             if (element.isForcedLoading()) {
                 components.add(FluxTranslate.FORCED_LOADING.makeComponent().withStyle(ChatFormatting.AQUA));
             }
-            components.add(Component.literal(FluxUtils.getTransferInfo(element, EnergyType.FE)));
+            components.add(Component.literal(FluxUtils.getTransferInfo(element, getNetwork().getEnergyType())));
         } else {
             components.add(FluxTranslate.CHUNK_UNLOADED.makeComponent().withStyle(ChatFormatting.RED));
         }
 
         if (element.getDeviceType().isStorage()) {
             components.add(Component.literal(FluxTranslate.ENERGY_STORED.get() + ": " + ChatFormatting.BLUE +
-                    EnergyType.FE.getStorage(element.getTransferBuffer())));
+                    getNetwork().getEnergyType().getStorage(element.getTransferBuffer())));
         } else {
             components.add(Component.literal(FluxTranslate.INTERNAL_BUFFER.get() + ": " + ChatFormatting.BLUE +
-                    EnergyType.FE.getStorage(element.getTransferBuffer())));
+                    getNetwork().getEnergyType().getStorage(element.getTransferBuffer())));
         }
 
         components.add(Component.literal(FluxTranslate.TRANSFER_LIMIT.get() + ": " + ChatFormatting.GREEN +
                 (element.getDisableLimit() ? FluxTranslate.UNLIMITED.get() :
-                        EnergyType.FE.getStorage(element.getRawLimit()))));
+                        getNetwork().getEnergyType().getStorage(element.getRawLimit()))));
         components.add(Component.literal(FluxTranslate.PRIORITY.get() + ": " + ChatFormatting.GREEN +
                 (element.getSurgeMode() ? FluxTranslate.SURGE.get() : element.getRawPriority())));
         components.add(Component.literal(FluxUtils.getDisplayPos(element.getGlobalPos()))

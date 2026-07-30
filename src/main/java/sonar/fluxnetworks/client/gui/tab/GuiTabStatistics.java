@@ -14,7 +14,6 @@ import net.minecraft.world.entity.player.Player;
 import org.joml.Matrix4f;
 import sonar.fluxnetworks.api.FluxConstants;
 import sonar.fluxnetworks.api.FluxTranslate;
-import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.client.gui.EnumNavigationTab;
 import sonar.fluxnetworks.client.gui.basic.GuiTabCore;
 import sonar.fluxnetworks.common.connection.*;
@@ -62,16 +61,16 @@ public class GuiTabStatistics extends GuiTabCore {
                     ChatFormatting.RESET + stats.fluxControllerCount, 82, 36, color);
             gr.drawString(font,
                     ChatFormatting.GRAY + FluxTranslate.INPUT.get() + ChatFormatting.GRAY + ": " + ChatFormatting.RESET +
-                            EnergyType.FE.getUsage(stats.energyInput), 12, 48, color);
+                            network.getEnergyType().getUsage(stats.energyInput), 12, 48, color);
             gr.drawString(font,
                     ChatFormatting.GRAY + FluxTranslate.OUTPUT.get() + ChatFormatting.GRAY + ": " + ChatFormatting.RESET +
-                            EnergyType.FE.getUsage(stats.energyOutput), 12, 60, color);
+                            network.getEnergyType().getUsage(stats.energyOutput), 12, 60, color);
             gr.drawString(font,
                     ChatFormatting.GRAY + FluxTranslate.BUFFER.get() + ChatFormatting.GRAY + ": " + ChatFormatting.RESET +
-                            EnergyType.FE.getStorage(stats.totalBuffer), 12, 72, color);
+                            network.getEnergyType().getStorage(stats.totalBuffer), 12, 72, color);
             gr.drawString(font,
                     ChatFormatting.GRAY + FluxTranslate.ENERGY.get() + ChatFormatting.GRAY + ": " + ChatFormatting.RESET +
-                            EnergyType.FE.getStorage(stats.totalEnergy), 12, 84, color);
+                            network.getEnergyType().getStorage(stats.totalEnergy), 12, 84, color);
             gr.pose().scale(0.75f, 0.75f, 1);
             gr.drawCenteredString(font,
                     FluxTranslate.AVERAGE_TICK.get() + ": " + stats.averageTickMicro + " \u00b5s/t",
@@ -95,7 +94,7 @@ public class GuiTabStatistics extends GuiTabCore {
         super.init();
         if (getNetwork().isValid()) {
             mChart = new LineChart(width / 2 - 48, height / 2 + 20, 50, NetworkStatistics.CHANGE_COUNT, "s",
-                    EnergyType.FE.getStorageSuffix());
+                    getNetwork().getEnergyType().getStorageSuffix());
             mChart.updateData(getNetwork().getStatistics().energyChange);
         }
     }

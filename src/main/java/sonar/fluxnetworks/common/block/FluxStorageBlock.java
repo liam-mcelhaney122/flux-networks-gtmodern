@@ -33,6 +33,7 @@ public abstract class FluxStorageBlock extends FluxDeviceBlock {
                                 TooltipFlag flag) {
         super.appendHoverText(stack, level, tooltip, flag);
         tooltip.add(FluxTranslate.FLUX_STORAGE_TOOLTIP.getComponent());
+        // item-form storage energy capacity is FE-denominated config, not tied to any network
         tooltip.add(FluxTranslate.FLUX_STORAGE_TOOLTIP_2.makeComponent(EnergyType.FE.getStorage(getEnergyCapacity())));
     }
 

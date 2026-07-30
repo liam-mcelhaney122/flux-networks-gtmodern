@@ -18,7 +18,6 @@ import net.minecraftforge.network.NetworkHooks;
 import sonar.fluxnetworks.api.FluxConstants;
 import sonar.fluxnetworks.api.FluxTranslate;
 import sonar.fluxnetworks.api.device.IFluxProvider;
-import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.api.misc.FluxConfigurationType;
 import sonar.fluxnetworks.client.ClientCache;
 import sonar.fluxnetworks.common.connection.FluxMenu;
@@ -91,7 +90,7 @@ public class ItemFluxConfigurator extends Item {
 
             if (tag.contains(FluxConstants.LIMIT)) {
                 tooltip.add(Component.literal(ChatFormatting.BLUE + FluxTranslate.TRANSFER_LIMIT.get() + ": " +
-                        ChatFormatting.RESET + EnergyType.FE.getStorage(tag.getLong(FluxConstants.LIMIT))));
+                        ChatFormatting.RESET + network.getEnergyType().getStorage(tag.getLong(FluxConstants.LIMIT))));
             }
 
             if (tag.contains(FluxConstants.PRIORITY)) {

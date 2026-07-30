@@ -10,7 +10,6 @@ import net.minecraft.world.item.ItemStack;
 import sonar.fluxnetworks.FluxNetworks;
 import sonar.fluxnetworks.api.FluxTranslate;
 import sonar.fluxnetworks.api.device.IFluxDevice;
-import sonar.fluxnetworks.api.energy.EnergyType;
 import sonar.fluxnetworks.api.network.AccessLevel;
 import sonar.fluxnetworks.client.ClientCache;
 import sonar.fluxnetworks.common.connection.FluxMenu;
@@ -155,10 +154,10 @@ public abstract class GuiFluxCore extends GuiPopupHost {
      */
     protected void renderTransfer(GuiGraphics gr, IFluxDevice device, int x, int y) {
         RenderSystem.enableBlend();
-        gr.drawString(font, FluxUtils.getTransferInfo(device, EnergyType.FE), x, y, 0xffffff);
+        gr.drawString(font, FluxUtils.getTransferInfo(device, getNetwork().getEnergyType()), x, y, 0xffffff);
 
         String text = device.getDeviceType().isStorage() ? FluxTranslate.ENERGY.get() : FluxTranslate.BUFFER.get();
-        text += ": " + ChatFormatting.BLUE + EnergyType.FE.getStorage(device.getTransferBuffer());
+        text += ": " + ChatFormatting.BLUE + getNetwork().getEnergyType().getStorage(device.getTransferBuffer());
         gr.drawString(font, text, x, y + 10, 0xffffff);
 
         renderItemStack(gr, device.getDisplayStack(), x - 20, y + 1);
