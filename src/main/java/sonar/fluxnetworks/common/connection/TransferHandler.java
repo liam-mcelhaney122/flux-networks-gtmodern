@@ -113,6 +113,13 @@ public abstract class TransferHandler {
     }
 
     /**
+     * @return the energy type that denominates {@link #mBuffer} and {@link #mLimit}.
+     */
+    public EnergyType getEnergyUnit() {
+        return mUnit;
+    }
+
+    /**
      * Insert energy to the internal buffer.
      *
      * @param energy the amount
